@@ -1,33 +1,33 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 
-from .routes import tasks, general
-from .database import engine, Base
+from .api import api_router
 
-# 创建数据库表
-Base.metadata.create_all(bind=engine)
-
+# 创建FastAPI应用
 app = FastAPI(
-    title="React+Python 应用 API",
-    description="基于FastAPI的后端API",
-    version="0.1.0"
+    title="Curio Survey API",
+    description="Curio调查系统后端API",
+    version="1.0.0",
 )
 
-# 配置跨域
+# 配置CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # 前端地址
+    allow_origins=["*"],  # 在生产环境中应该设置为特定域名
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# 根路径处理
+# 包含API路由
+app.include_router(api_router, prefix="/api/v1")
+
+# 根路由
 @app.get("/")
 async def root():
-    return {"message": "欢迎使用React+Python应用API"}
-
-# 包含路由
-app.include_router(general.router, prefix="/api")
-app.include_router(tasks.router, prefix="/api/tasks", tags=["tasks"]) 
+    return {
+        "message": "Welcome to Curio Survey API",
+        "docs": "/docs",
+        "version": "1.0.0"
+    } 

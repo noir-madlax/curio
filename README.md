@@ -70,11 +70,11 @@ pip install -r requirements.txt
 python main.py
 ```
 
-后端API将在 http://localhost:6000 运行。
+后端API将在 http://localhost:8080 运行。
 
 ## API文档
 
-启动后端服务后，可以访问 http://localhost:6000/docs 查看自动生成的API文档。
+启动后端服务后，可以访问 http://localhost:8080/docs 查看自动生成的API文档。
 
 ## 主要功能
 
