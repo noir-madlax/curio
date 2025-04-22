@@ -1,12 +1,17 @@
-from .config import Base, engine, get_db
-from .models import Survey, SurveyQuestion, SurveyResponse, SurveyResponseConversation
+from .config import get_supabase
+from .utils import (
+    test_supabase_connection, 
+    get_database_tables_info,
+    query_table,
+    get_by_id,
+    get_related_data
+)
 
 __all__ = [
-    "Base", 
-    "engine", 
-    "get_db",
-    "Survey", 
-    "SurveyQuestion", 
-    "SurveyResponse", 
-    "SurveyResponseConversation"
+    "get_supabase",
+    "test_supabase_connection",
+    "get_database_tables_info",
+    "query_table",
+    "get_by_id",
+    "get_related_data"
 ] 

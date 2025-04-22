@@ -1,36 +1,27 @@
 import os
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
+from supabase import create_client, Client
 
 # 加载环境变量
 load_dotenv()
 
-# 获取Supabase连接信息
+# Supabase配置
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-SUPABASE_DB_URL = os.getenv("SUPABASE_DB_URL")  # 格式: postgresql://username:password@host:port/database
 
-# 创建SQLAlchemy引擎
-if SUPABASE_DB_URL:
-    DATABASE_URL = SUPABASE_DB_URL
-else:
-    # 如果没有设置Supabase数据库URL，则使用SQLite作为后备选项
-    DATABASE_URL = "sqlite:///./app.db"
-    
-engine = create_engine(DATABASE_URL)
-
-# 创建会话工厂
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# 创建基类模型
-Base = declarative_base()
-
-# 依赖项函数 - 获取数据库会话
-def get_db():
-    db = SessionLocal()
+# 创建Supabase客户端
+supabase: Client = None
+if SUPABASE_URL and SUPABASE_KEY:
     try:
-        yield db
-    finally:
-        db.close() 
+        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+        print("Supabase客户端连接成功")
+    except Exception as e:
+        print(f"Supabase客户端连接失败: {str(e)}")
+else:
+    print("警告：未配置Supabase URL或API Key")
+
+# 获取Supabase客户端实例
+def get_supabase() -> Client:
+    if supabase is None:
+        raise Exception("Supabase客户端未初始化")
+    return supabase

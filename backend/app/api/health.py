@@ -1,38 +1,37 @@
 from typing import Dict, Any
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from fastapi import APIRouter
 
-from ..database import get_db
-from ..database.utils import test_database_connection, get_database_tables_info
+from ..database import test_supabase_connection, get_database_tables_info
+from ..database.schemas import HealthResponse, DatabaseHealthResponse
 
 router = APIRouter()
 
 
-@router.get("/")
-async def health_check() -> Dict[str, Any]:
+@router.get("/", response_model=HealthResponse)
+async def health_check() -> HealthResponse:
     """
     健康检查端点
     """
-    return {
-        "status": "ok",
-        "service": "survey-api",
-        "version": "1.0.0"
-    }
+    return HealthResponse(
+        status="ok",
+        service="survey-api",
+        version="1.0.0"
+    )
 
 
-@router.get("/db")
-async def database_health(db: Session = Depends(get_db)) -> Dict[str, Any]:
+@router.get("/db", response_model=DatabaseHealthResponse)
+async def database_health() -> DatabaseHealthResponse:
     """
-    数据库健康检查端点
+    数据库健康检查端点 - 检查Supabase连接
     """
-    db_connected = await test_database_connection()
+    supabase_connected = await test_supabase_connection()
     
-    response = {
-        "database_connected": db_connected,
-    }
+    response = DatabaseHealthResponse(
+        supabase_connected=supabase_connected
+    )
     
-    if db_connected:
+    if supabase_connected:
         tables_info = await get_database_tables_info()
-        response["tables"] = list(tables_info.keys())
+        response.tables = list(tables_info.keys())
         
     return response 

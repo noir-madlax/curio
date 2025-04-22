@@ -1,135 +1,85 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from datetime import datetime
 
 
-# 基础模式类
+# 基础模型类
 class BaseSchema(BaseModel):
     class Config:
-        from_attributes = True  # 允许从ORM模型创建Pydantic模型
+        from_attributes = True  # 兼容ORM模型
 
 
-# --------- Survey 模式 ---------
-class SurveyBase(BaseSchema):
+# Survey模型
+class Survey(BaseSchema):
+    id: int
     title: str
     description: Optional[str] = None
     status: Optional[str] = None
     user_id: Optional[str] = None
     language: Optional[str] = None
-    
-    
-class SurveyCreate(SurveyBase):
-    pass
-
-
-class SurveyUpdate(BaseSchema):
-    title: Optional[str] = None
-    description: Optional[str] = None
-    status: Optional[str] = None
-    language: Optional[str] = None
-
-
-class SurveyInDB(SurveyBase):
-    id: int
     created_at: datetime
     updated_at: datetime
 
 
-class Survey(SurveyInDB):
-    pass
-
-
-# --------- SurveyQuestion 模式 ---------
-class SurveyQuestionBase(BaseSchema):
+# SurveyQuestion模型
+class SurveyQuestion(BaseSchema):
+    id: int
     survey_id: int
     question_text: str
     question_order: Optional[int] = None
     followup_count: Optional[int] = None
     question_type: Optional[str] = None
     question_objectives: Optional[str] = None
-
-
-class SurveyQuestionCreate(SurveyQuestionBase):
-    pass
-
-
-class SurveyQuestionUpdate(BaseSchema):
-    question_text: Optional[str] = None
-    question_order: Optional[int] = None
-    followup_count: Optional[int] = None
-    question_type: Optional[str] = None
-    question_objectives: Optional[str] = None
-
-
-class SurveyQuestionInDB(SurveyQuestionBase):
-    id: int
     created_at: datetime
     updated_at: datetime
 
 
-class SurveyQuestion(SurveyQuestionInDB):
-    pass
-
-
-# --------- SurveyResponse 模式 ---------
-class SurveyResponseBase(BaseSchema):
+# SurveyResponse模型
+class SurveyResponse(BaseSchema):
+    id: int
     survey_id: int
     respondent_identifier: Optional[str] = None
     status: Optional[str] = None
-
-
-class SurveyResponseCreate(SurveyResponseBase):
-    pass
-
-
-class SurveyResponseUpdate(BaseSchema):
-    respondent_identifier: Optional[str] = None
-    status: Optional[str] = None
-
-
-class SurveyResponseInDB(SurveyResponseBase):
-    id: int
     created_at: datetime
     updated_at: datetime
 
 
-class SurveyResponse(SurveyResponseInDB):
-    pass
-
-
-# --------- SurveyResponseConversation 模式 ---------
-class SurveyResponseConversationBase(BaseSchema):
+# SurveyResponseConversation模型
+class SurveyResponseConversation(BaseSchema):
+    id: int
     survey_response_id: int
     speaker_type: str
     message_text: str
     conversation_order: Optional[int] = None
-
-
-class SurveyResponseConversationCreate(SurveyResponseConversationBase):
-    pass
-
-
-class SurveyResponseConversationUpdate(BaseSchema):
-    speaker_type: Optional[str] = None
-    message_text: Optional[str] = None
-    conversation_order: Optional[int] = None
-
-
-class SurveyResponseConversationInDB(SurveyResponseConversationBase):
-    id: int
     created_at: datetime
     updated_at: datetime
 
 
-class SurveyResponseConversation(SurveyResponseConversationInDB):
-    pass
+# 表查询响应模型
+class TableQueryParams(BaseSchema):
+    select_fields: Optional[str] = "*"
+    limit: Optional[int] = 100
+    offset: Optional[int] = 0
+    
+
+class TableQueryResponse(BaseSchema):
+    data: List[Dict[str, Any]]
+    count: int
 
 
-# --------- 嵌套关系模式 ---------
-class SurveyWithDetails(Survey):
-    questions: List[SurveyQuestion] = []
-    responses: List[SurveyResponse] = []
+# 关系数据响应模型
+class RelatedDataResponse(BaseSchema):
+    main_record: Dict[str, Any]
+    related_records: Dict[str, List[Dict[str, Any]]]
 
 
-class SurveyResponseWithConversations(SurveyResponse):
-    conversations: List[SurveyResponseConversation] = []
+# 健康检查响应模型
+class HealthResponse(BaseSchema):
+    status: str
+    service: str
+    version: str
+
+
+class DatabaseHealthResponse(BaseSchema):
+    supabase_connected: bool
+    tables: Optional[List[str]] = None
