@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Survey from './pages/Survey/Survey';
 import NewSurvey from './pages/NewSurvey/NewSurvey';
 import SurveyPublished from './pages/SurveyPublished/SurveyPublished';
+import SurveyChatPage from './pages/SurveyRespondent/SurveyChatPage';
 import './App.css';
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
         <Route path="/respondents" element={<Survey />} />
         <Route path="/settings" element={<Survey />} />
         <Route path="/help" element={<Survey />} />
+        <Route path="/survey/:surveyId/respond" element={<SurveyChatPage />} />
         </Routes>
     </Router>
   );
