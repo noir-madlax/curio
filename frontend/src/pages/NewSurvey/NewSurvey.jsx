@@ -13,7 +13,6 @@ import editIcon from '../../assets/icons/edit_icon.svg';
 import deleteIcon from '../../assets/icons/delete_icon.svg';
 import dragIcon from '../../assets/icons/drag_icon.svg';
 import plusIcon from '../../assets/icons/plus_icon.svg';
-import sendIcon from '../../assets/icons/send_chat_icon.svg';
 
 const NewSurvey = () => {
   const navigate = useNavigate();
@@ -122,34 +121,6 @@ const NewSurvey = () => {
       setQuestionText('');
       setNeedsFollowUp(true);
       setQuestionPurpose('');
-    }
-  };
-  
-  // 处理发送消息的函数
-  const handleSendMessage = () => {
-    const text = inputValue.trim();
-    if (text) {
-      // 添加消息到列表
-      const newUserMessage = {
-        id: Date.now(),
-        sender: 'user',
-        text: text,
-      };
-      const newAiMessage = {
-        id: Date.now() + 1,
-        sender: 'ai',
-        text: `Received your answer: "${text}". Next question is...`
-      };
-      setMessages(prevMessages => [...prevMessages, newUserMessage, newAiMessage]);
-      
-      // 重要：清空输入框
-      setInputValue('');
-      
-      // 如果启用了textarea高度自适应，还需要重置高度
-      const textarea = document.querySelector('.chat-input-area textarea');
-      if (textarea) {
-        textarea.style.height = 'auto';
-      }
     }
   };
   
