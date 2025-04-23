@@ -1,0 +1,467 @@
+.new-survey-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 24px;
+}
+
+.new-survey-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.header-title h1 {
+  font-size: 28px;
+  font-weight: 600;
+  color: #232325;
+  margin: 0;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.header-actions {
+  display: flex;
+  gap: 15px;
+}
+
+.button-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+/* 选项卡样式 */
+.new-survey-tabs {
+  display: flex;
+  gap: 224px;
+  padding: 6px;
+  background-color: #F4F4F5;
+  border-radius: 8px;
+  border-bottom: none;
+}
+
+.tab {
+  padding: 6px 24px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  color: #94949B;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  transition: all 0.2s ease;
+  text-align: center;
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.tab.active {
+  background-color: #FEFEFE;
+  border: 1px solid #E7E7E8;
+  border-radius: 4px;
+  color: #333333;
+  min-height: 36px;
+}
+
+/* 表单样式 */
+.survey-details-form,
+.add-question-form {
+  background-color: #FEFEFE;
+  border: 1px solid #E3E3E6;
+  border-radius: 8px;
+  padding: 16px 36px;
+  box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 24px;
+}
+
+.survey-questions {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 24px;
+}
+
+.survey-questions.is-empty {
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  min-height: auto;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  width: 100%;
+}
+
+.form-group label {
+  font-size: 20px;
+  font-weight: 600;
+  color: #262628;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.form-group input, 
+.form-group textarea {
+  padding: 11px 14px;
+  border: 1.5px solid #E6E6E9;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #666666;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  resize: vertical;
+}
+
+.form-group input:focus, 
+.form-group textarea:focus {
+  outline: none;
+  border-color: #2463EB;
+}
+
+.form-group input::placeholder, 
+.form-group textarea::placeholder {
+  color: #888888;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+  gap: 16px;
+}
+
+.form-actions button {
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 4px;
+}
+
+/* 修改：为 Survey Details 表单中的按钮添加最小宽度 */
+.survey-details-form .form-actions button {
+  min-width: 985px; /* 设置最小宽度，让按钮更长 */
+  text-align: center; /* 确保文本居中 */
+}
+
+/* 问题区域样式 */
+.empty-questions-message {
+  text-align: center;
+  margin-bottom: 0px;
+}
+
+.empty-questions-message p {
+  font-size: 18.6px;
+  color: #888888;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 400;
+  margin: 0;
+}
+
+/* 添加问题表单样式 */
+.add-question-form h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #262628;
+  margin: 0;
+  padding: 0px 0;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* 开关样式 */
+.switch-group {
+  flex-direction: row;
+  align-items: center;
+  gap: 9px;
+}
+
+.switch-text {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333333;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch-label {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #E9E9EB;
+  border-radius: 34px;
+  transition: .4s;
+}
+
+.switch-label:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  border-radius: 50%;
+  transition: .4s;
+}
+
+input:checked + .switch-label {
+  background-color: #35D572;
+}
+
+input:checked + .switch-label:before {
+  transform: translateX(22px);
+}
+
+/* 新增: 带图标的跟进问题说明样式 */
+.follow-up-explanation {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 0px;
+  padding-left: 0;
+  margin-bottom: 0px;
+}
+
+.follow-up-explanation .info-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.follow-up-explanation p {
+  font-size: 14px;
+  color: #666666;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* 问题列表样式 */
+.question-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.question-item {
+  padding: 16px;
+  border: 1px solid #E3E3E6;
+  border-radius: 8px;
+  background-color: #FEFEFE;
+}
+
+.question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 16px;
+}
+
+.question-drag {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.question-number {
+  font-size: 16px;
+  font-weight: 600;
+  color: #666666;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.question-header .question-status {
+  margin: 0;
+  flex-grow: 1;
+  text-align: left;
+  margin-left: 16px;
+  margin-right: 16px;
+}
+
+.question-actions-buttons {
+  display: flex;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.icon-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333333;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.delete-button {
+  color: #f43f5e;
+}
+
+.question-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.question-label,
+.purpose-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #888888;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.question-text {
+  font-size: 16px;
+  font-weight: 400;
+  color: #333333;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.4;
+}
+
+.question-status {
+  /* margin-top: 0px; */
+}
+
+/* 移除旧的 status-badge 样式 */
+/* .status-badge { ... } */
+/* .has-followup { ... } */
+/* .no-followup { ... } */
+
+/* 新增 status-item 样式 */
+.status-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot.green {
+  background-color: #34C759;
+}
+
+.status-dot.grey {
+  background-color: #BDBDBD;
+}
+
+.status-text {
+  font-size: 13px;
+  font-weight: 400;
+  color: #555555;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.question-purpose {
+  /* margin-top: 0px; */
+}
+
+.purpose-text {
+  font-size: 14px;
+  color: #666666;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.5;
+}
+
+.add-question-button-container {
+  display: flex;
+  margin-top: 24px;
+}
+
+.add-question-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #FEFEFE;
+  border: 1px solid #EDEDEF;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2463EB;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  height: 60px;
+  width: 100%;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+.add-question-button img {
+  width: 16px;
+  height: 16px;
+}
+
+.question-actions {
+  margin-top: 24px;
+  border-top: 1px solid #E9E9EB;
+  padding-top: 24px;
+}
+
+/* 响应式布局 */
+@media (max-width: 768px) {
+  .new-survey-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  
+  .header-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  
+  .survey-details-form,
+  .add-question-form {
+    padding: 24px;
+  }
+  
+  .new-survey-tabs {
+    gap: 24px;
+  }
+  
+  .tab.active {
+    min-height: 36px;
+  }
+
+  .ai-info-box {
+    flex-direction: column;
+    padding: 15px;
+  }
+} 

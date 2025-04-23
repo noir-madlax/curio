@@ -1,0 +1,22 @@
+.status-badge {
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.15);
+  width: 98px;
+  height: 29px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.badge-published {
+  background-color: #DBFDE6;
+  color: #166434;
+}
+
+.badge-draft {
+  background-color: #FEF5E9;
+  color: #6C300E;
+} 

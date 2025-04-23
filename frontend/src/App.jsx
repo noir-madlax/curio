@@ -1,44 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
-import axios from 'axios';
-
-// 页面组件
-import Home from './pages/Home';
-import About from './pages/About';
-
-// 通用组件  
-import Header from './components/Header';
-import Footer from './components/Footer';
-
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Survey from './pages/Survey/Survey';
+import NewSurvey from './pages/NewSurvey/NewSurvey';
+import SurveyPublished from './pages/SurveyPublished/SurveyPublished';
 import './App.css';
 
 function App() {
-  const [message, setMessage] = useState('');
-
-  useEffect(() => {
-    // 测试与后端的连接
-    axios.get('/api/hello')
-      .then(response => {
-        setMessage(response.data.message);
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-        setMessage('无法连接到后端服务');
-      });
-  }, []);
-
   return (
-    <div className="app">
-      <Header />
-      <main className="main-content">
-        {message && <div className="api-message">{message}</div>}
+    <Router>
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
+        <Route path="/" element={<Navigate to="/surveys" replace />} />
+        <Route path="/surveys" element={<Survey />} />
+        <Route path="/surveys/new" element={<NewSurvey />} />
+        <Route path="/survey-published/:surveyId" element={<SurveyPublished />} />
+        <Route path="/analytics" element={<Survey />} />
+        <Route path="/respondents" element={<Survey />} />
+        <Route path="/settings" element={<Survey />} />
+        <Route path="/help" element={<Survey />} />
         </Routes>
-      </main>
-      <Footer />
-    </div>
+    </Router>
   );
 }
 

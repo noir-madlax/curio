@@ -1,0 +1,65 @@
+.survey-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0px;
+  padding-top: 0px;
+  padding-bottom: 14px;
+}
+
+.page-title h1 {
+  font-size: 34.8px;
+  font-weight: 600;
+  color: #232325;
+  margin: 0 0 4px 0;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.page-title p {
+  font-size: 18.8px;
+  color: #98989E;
+  margin: 0;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.add-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.surveys-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+  gap: 24px;
+  width: 100%;
+}
+
+/* 响应式调整 */
+@media (max-width: 1200px) {
+  .surveys-grid {
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .surveys-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .survey-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .page-title h1 {
+    font-size: 28px;
+  }
+  
+  .page-title p {
+    font-size: 16px;
+  }
+} 

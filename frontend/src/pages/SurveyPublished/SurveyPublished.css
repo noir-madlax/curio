@@ -1,0 +1,320 @@
+/* Overall Container */
+.survey-published-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%; /* Use 100% for responsiveness */
+  max-width: 1072px; /* Maintain max width from Figma */
+  margin: 0 auto; /* Center the container */
+  gap: 44px; /* Consistent gap from Figma */
+  padding: 20px; /* Add some padding for smaller screens */
+  box-sizing: border-box;
+  font-family: 'Inter', 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif; /* Default font */
+}
+
+/* Header Section */
+.published-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px; /* figma 1024:720 */
+}
+
+.published-title-section {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* figma 1024:755 */
+}
+
+.published-title-section h1 {
+  font-family: 'SF Pro Display', system-ui, sans-serif; /* figma style_17A734 */
+  font-weight: 600; /* figma style_17A734 */
+  font-size: 28px; /* figma style_17A734 */
+  color: #232325; /* figma fill_UJZ338 */
+  margin: 0;
+}
+
+.published-badge {
+  font-family: 'Inter', sans-serif; /* figma style_BVXV7U */
+  font-weight: 500; /* figma style_BVXV7U */
+  font-size: 19.2px; /* figma style_BVXV7U */
+  color: #43855A; /* figma fill_Z71SV3 */
+  background-color: #DCFCE7; /* figma fill_91PS0A */
+  padding: 4px 16px; /* figma 1024:756 */
+  border-radius: 6px; /* figma 1024:756 */
+}
+
+.published-subtitle {
+  font-family: 'SF Pro Display', system-ui, sans-serif; /* figma style_7P5FL6 */
+  font-weight: 400; /* figma style_7P5FL6 */
+  font-size: 16px; /* figma style_7P5FL6 */
+  color: #666666; /* figma fill_A8KCF8 */
+  margin: 0;
+}
+
+/* Share Tabs Section */
+.published-share-tabs {
+  background-color: #F4F4F5; /* figma fill_14NONQ */
+  padding: 8px 6px; /* figma 1024:735 padding top/bottom/left */
+  border-radius: 8px; /* Consistent with similar tabs */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.share-tab-container {
+  display: flex;
+  justify-content: space-between; /* Distribute tabs */
+  align-items: center;
+  max-width: 797px; /* Approximate width from figma 1024:754 */
+  margin: 0 auto; /* Center the tabs */
+  gap: 10px; /* Add some gap between tabs */
+}
+
+.share-tab-wrapper {
+   display: flex; /* Wrapper to hold the active background/border */
+   border-radius: 6px; /* figma 1024:736 */
+   border: 1px solid transparent; /* Placeholder for border */
+   background-color: transparent; /* Default transparent */
+   flex-grow: 1; /* Allow wrappers to take space */
+   justify-content: center; /* Center the button inside */
+}
+
+.share-tab-wrapper.active {
+  background-color: #FEFEFE; /* figma 1024:736 fill_Q4G781 */
+  border: 1px solid #E7E7E7; /* figma 1024:736 stroke_ULYK8I */
+}
+
+.share-tab {
+  font-family: 'SF Pro Display', system-ui, sans-serif; /* figma style_HL84IK */
+  font-weight: 600; /* figma style_HL84IK */
+  font-size: 16px; /* figma style_HL84IK */
+  color: #94949B; /* figma fill_JJY6LP (inactive) */
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 12px 24px; /* Approximation */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap; /* Prevent wrapping */
+  /* flex-grow: 1; */ /* Button does not need to grow, wrapper does */
+  justify-content: center;
+}
+
+.share-tab.active {
+  color: #333333; /* figma fill_P481EW (active) */
+}
+
+.share-tab .icon-placeholder {
+  /* Style placeholder icons if needed */
+  font-size: 1em; /* Adjusted size */
+  line-height: 1;
+}
+
+/* Share Content Section */
+.published-share-content {
+  background-color: #EFF6FF; /* figma fill_2JS374 */
+  border: 1px solid #BFDBFE; /* figma stroke_6A6KWG */
+  border-radius: 8px; /* figma 1024:742 */
+  padding: 32px 24px; /* figma 1024:742 */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.share-content-placeholder {
+  color: #6D7683;
+  text-align: center;
+  padding: 20px;
+}
+
+
+.share-content-link {
+  display: flex;
+  flex-direction: column;
+  gap: 13px; /* figma 1024:742 */
+}
+
+.share-link-header {
+  display: flex;
+  align-items: center;
+  gap: 13px; /* figma 1024:741 */
+}
+
+.share-link-header h3 {
+  font-family: 'Inter', sans-serif; /* figma style_K7TM20 */
+  font-weight: 500; /* figma style_K7TM20 */
+  font-size: 24.7px; /* figma style_K7TM20 */
+  color: #4278EE; /* figma fill_FCIFBJ */
+  margin: 0;
+}
+
+.share-content-link p {
+  font-family: 'Inter', sans-serif; /* figma style_3OYRRF */
+  font-weight: 400; /* figma style_3OYRRF */
+  font-size: 21.7px; /* figma style_3OYRRF */
+  color: #6D7683; /* figma fill_UJ81Q8 */
+  margin: 0;
+  line-height: 1.4; /* Improve readability */
+}
+
+.share-link-actions {
+  display: flex;
+  align-items: center;
+  gap: 13px; /* figma 1024:744 */
+}
+
+.link-input-container {
+  flex-grow: 1; /* Allow input to take available space */
+}
+
+.link-input-container input {
+  background-color: #F9FAFB; /* figma fill_5AYXTG */
+  border: 1.5px solid #E4E4E7; /* figma stroke_Z2826L */
+  border-radius: 4px; /* figma 1016:32 */
+  padding: 12px 24px; /* figma 1016:32 */
+  font-family: 'Inter', sans-serif; /* figma style_SQ4ZSH */
+  font-weight: 400; /* figma style_SQ4ZSH */
+  font-size: 21.3px; /* figma style_SQ4ZSH */
+  color: #39393B; /* figma fill_XVB6HJ */
+  width: 100%;
+  box-sizing: border-box;
+  height: 50px; /* Match button height */
+}
+
+.share-link-actions .button { /* Style the common Button component if used */
+  height: 50px; /* figma 1024:743 */
+  padding: 12px 24px; /* figma 1024:743 */
+  font-family: 'Inter', sans-serif; /* figma style_CPT0UC */
+  font-size: 22.2px; /* figma style_CPT0UC */
+  font-weight: 500; /* figma style_CPT0UC */
+  flex-shrink: 0; /* Prevent button from shrinking */
+}
+
+/* Responses Section */
+.published-responses-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #F9FAFB; /* figma fill_5AYXTG */
+  border: 1px solid #E4E4E7; /* figma stroke_FIQRAA */
+  border-radius: 8px; /* figma 1024:751 */
+  padding: 32px 24px; /* figma 1024:751 */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.responses-info {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* figma 1024:750 */
+}
+
+.responses-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px; /* figma 1024:749 */
+}
+
+.responses-text h4 {
+  font-family: 'Inter', sans-serif; /* figma style_K7TM20 */
+  font-weight: 500; /* figma style_K7TM20 */
+  font-size: 24.7px; /* figma style_K7TM20 */
+  color: #323234; /* figma fill_5NYMW7 */
+  margin: 0;
+}
+
+.responses-text p {
+  font-family: 'Inter', sans-serif; /* figma style_3OYRRF */
+  font-weight: 400; /* figma style_3OYRRF */
+  font-size: 21.7px; /* figma style_3OYRRF */
+  color: #848A96; /* figma fill_0DUG6X */
+  margin: 0;
+}
+
+.published-responses-section .button { /* Style View Responses Button */
+   font-family: 'Inter', sans-serif; /* figma style_3OYRRF */
+   font-size: 21.7px; /* figma style_3OYRRF */
+   font-weight: 400; /* figma style_3OYRRF */
+   height: 57px; /* figma 1024:745 */
+   padding: 12px 24px; /* figma 1024:745 */
+   border-radius: 6px; /* figma 1024:745 */
+   flex-shrink: 0;
+}
+
+/* Footer Actions Section */
+.published-footer-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #E9E9EB; /* figma stroke_9QN6B2 */
+  padding-top: 24px; /* figma 1024:752 */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Style Back to Surveys Button if using common component */
+.published-footer-actions .button.btn-secondary { /* Assuming secondary variant has appropriate styles */
+   font-family: 'Inter', sans-serif; /* figma style_3OYRRF */
+   font-size: 21.7px; /* figma style_3OYRRF */
+   font-weight: 400; /* figma style_3OYRRF */
+   height: 54px; /* figma 1024:748 */
+   padding: 12px 24px; /* figma 1024:748 */
+   border-radius: 6px; /* figma 1024:748 */
+   flex-shrink: 0;
+}
+
+/* Style Open Survey Button */
+.published-footer-actions .button-link {
+  text-decoration: none; /* Remove underline from link */
+}
+
+.published-footer-actions .button-link .button { /* Assuming primary variant has appropriate styles */
+   font-family: 'Inter', sans-serif; /* figma style_NUC7FA */
+   font-size: 21.7px; /* figma style_NUC7FA */
+   font-weight: 500; /* figma style_NUC7FA */
+   height: 50px; /* Match copy button height */
+   padding: 12px 24px; /* figma 1024:747 */
+   border-radius: 4px; /* figma 1024:747 */
+   flex-shrink: 0;
+}
+
+.icon-placeholder {
+  font-size: 1.5em; /* Adjust placeholder size */
+  line-height: 1;
+  display: inline-block; /* Ensure proper alignment */
+  vertical-align: middle; /* Align with text */
+}
+
+/* Adjust icon placeholder size inside buttons */
+.share-tab .icon-placeholder,
+.share-link-header .icon-placeholder,
+.share-link-actions .button .icon-placeholder,
+.responses-info .icon-placeholder,
+.published-footer-actions .button .icon-placeholder {
+  font-size: 1.2em; /* Smaller icons inside elements */
+}
+
+/* Basic Icon Styling */
+.icon-img {
+  display: inline-block; /* Or block if needed */
+  vertical-align: middle; /* Align with text */
+  /* Add default size if needed, can be overridden */
+  /* width: 16px; */ 
+  /* height: 16px; */
+}
+
+.button-icon {
+  /* Specific styles for icons inside buttons */
+  width: 16px; /* Example size */
+  height: 16px;
+}
+
+.header-icon {
+  /* Specific styles for the blue section icon */
+  width: 24px; /* Example size */
+  height: 24px;
+}
+
+.section-icon {
+  /* Specific styles for section icons like Responses */
+  width: 32px; /* Example size */
+  height: 32px;
+} 

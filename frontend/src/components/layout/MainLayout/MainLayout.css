@@ -1,0 +1,35 @@
+.main-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: #FFFFFF;
+  width: 100%;
+  overflow: hidden; /* 防止内容溢出 */
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: calc(100% - 320px); /* 计算宽度减去侧边栏 */
+  margin-left: 320px; /* 添加左边距与侧边栏宽度相等 */
+}
+
+.content-area {
+  flex: 1;
+  padding: 16px 32px; /* 减少顶部padding */
+  overflow-y: auto;
+  max-width: 100%;
+}
+
+/* 响应式布局 */
+@media (max-width: 1024px) {
+  .main-content {
+    width: 100%;
+    margin-left: 0; /* 移动设备下不显示侧边栏 */
+  }
+  
+  .sidebar {
+    display: none; /* 移动设备下隐藏侧边栏 */
+  }
+} 
