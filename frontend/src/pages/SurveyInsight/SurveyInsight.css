@@ -1,0 +1,256 @@
+/* SurveyInsight.css */
+/* 2024-07-24: 创建Survey Insight页面的样式，完全还原Figma设计 */
+
+.survey-insight-container {
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 16px 32px;
+  font-family: 'Inter', sans-serif;
+}
+
+/* 标题区域 */
+.survey-insight-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  padding-top: 16px;
+  width: 100%;
+}
+
+.survey-title-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.title-badge-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.survey-title-info h1 {
+  font-size: 28.7px;
+  font-weight: 600;
+  color: #232325;
+  margin: 0;
+  line-height: 1.21;
+  font-family: 'Inter', sans-serif;
+}
+
+/* 概览区域 */
+.insight-overview {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+/* 摘要部分 */
+.summary-section {
+  background-color: #FFFFFF;
+  border: 1px solid #E6E6E9;
+  border-radius: 15px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 2024-07-25: 修复样式冲突，将section-title限制在具体组件内 */
+.survey-insight-container .section-title {
+  font-size: 20.7px;
+  font-weight: 500;
+  color: #2C2C2D;
+  margin: 0;
+  line-height: 1.21;
+}
+
+.summary-content {
+  padding: 16px 0;
+}
+
+.summary-content p {
+  font-size: 16px;
+  font-weight: 400;
+  color: #58585A;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* 情感分析部分 */
+.sentiment-section {
+  background-color: #FFFFFF;
+  border: 1px solid #E6E6E9;
+  border-radius: 15px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sentiment-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 0;
+}
+
+.sentiment-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.sentiment-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
+.sentiment-positive .sentiment-icon {
+  background-color: #4CAF50;
+}
+
+.sentiment-neutral .sentiment-icon {
+  background-color: #9E9E9E;
+}
+
+.sentiment-negative .sentiment-icon {
+  background-color: #F44336;
+}
+
+.sentiment-text {
+  font-size: 16px;
+  font-weight: 400;
+  color: #5D5D5E;
+  line-height: 1.21;
+}
+
+/* 关键洞察部分 */
+.key-insights-section {
+  background-color: #FFFFFF;
+  border: 1px solid #E6E6E9;
+  border-radius: 15px;
+  padding: 24px;
+  margin-bottom: 32px;
+}
+
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  padding: 24px 0;
+}
+
+.insight-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  background-color: #F7F7F8;
+  border-radius: 12px;
+}
+
+.insight-icon {
+  width: 32px;
+  height: 32px;
+  background-color: #E0E0E0;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.insight-text {
+  font-size: 16px;
+  font-weight: 400;
+  color: #606061;
+  line-height: 1.21;
+  margin: 0;
+}
+
+/* 推荐行动部分 */
+.recommended-actions-section {
+  background-color: #FFFFFF;
+  border: 1px solid #E6E6E9;
+  border-radius: 15px;
+  padding: 24px;
+}
+
+.actions-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  padding: 24px 0;
+}
+
+.action-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px;
+  background-color: #F7F7F8;
+  border-radius: 12px;
+}
+
+.action-icon {
+  width: 32px;
+  height: 32px;
+  background-color: #E0E0E0;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.action-text {
+  font-size: 16px;
+  font-weight: 400;
+  color: #606062;
+  line-height: 1.21;
+  margin: 0;
+}
+
+/* 占位图标样式 */
+.placeholder-icon {
+  background-color: #E0E0E0;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+}
+
+/* 响应式设计 */
+@media (max-width: 1024px) {
+  .insight-overview,
+  .insights-grid,
+  .actions-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .survey-insight-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .title-badge-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 600px) {
+  .survey-insight-container {
+    padding: 0 12px 24px;
+  }
+  
+  .section-title {
+    font-size: 18px;
+  }
+  
+  .summary-content p,
+  .insight-text,
+  .action-text,
+  .sentiment-text {
+    font-size: 14px;
+  }
+} 

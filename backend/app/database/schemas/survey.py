@@ -1,5 +1,5 @@
 """
-问卷相关数据模型
+Survey related data models
 """
 
 from typing import Optional, List
@@ -11,21 +11,21 @@ from .survey_question import SurveyQuestion
 
 
 class SurveyBase(BaseModel):
-    """问卷基础模型"""
+    """Base survey model"""
     title: str
     description: Optional[str] = None
     status: Optional[str] = "draft"
-    language: Optional[str] = "zh-CN"
+    language: Optional[str] = "en"
     user_id: Optional[str] = None
 
 
 class SurveyCreate(SurveyBase):
-    """创建问卷时使用的模型"""
+    """Model used when creating a survey"""
     pass
 
 
 class SurveyUpdate(BaseModel):
-    """更新问卷时使用的模型"""
+    """Model used when updating a survey"""
     title: Optional[str] = None
     description: Optional[str] = None
     status: Optional[str] = None
@@ -34,7 +34,7 @@ class SurveyUpdate(BaseModel):
 
 
 class Survey(SurveyBase):
-    """问卷完整模型，包含数据库返回的字段"""
+    """Complete survey model including database fields"""
     id: int
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
@@ -44,5 +44,5 @@ class Survey(SurveyBase):
 
 
 class SurveyWithQuestions(Survey):
-    """包含问题列表的问卷模型"""
+    """Survey model with list of questions"""
     questions: List[SurveyQuestion] = [] 

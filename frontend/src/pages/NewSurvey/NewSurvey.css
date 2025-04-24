@@ -145,7 +145,7 @@
 
 /* 修改：为 Survey Details 表单中的按钮添加最小宽度 */
 .survey-details-form .form-actions button {
-  min-width: 985px; /* 设置最小宽度，让按钮更长 */
+  min-width: 100%; /* 设置最小宽度，让按钮更长 */
   text-align: center; /* 确保文本居中 */
 }
 
@@ -269,14 +269,15 @@ input:checked + .switch-label:before {
   border: 1px solid #E3E3E6;
   border-radius: 8px;
   background-color: #FEFEFE;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.question-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  gap: 16px;
+/* 2024-08-07T21:10:00Z 新增：拖拽相关样式 */
+.question-item.is-dragging {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background-color: #F9F9FA;
+  transform: scale(1.01);
+  z-index: 100;
 }
 
 .question-drag {
@@ -284,6 +285,19 @@ input:checked + .switch-label:before {
   align-items: center;
   gap: 12px;
   flex-shrink: 0;
+  cursor: grab;
+}
+
+.question-drag:active {
+  cursor: grabbing;
+}
+
+.question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: px;
+  gap: 16px;
 }
 
 .question-number {
@@ -325,38 +339,50 @@ input:checked + .switch-label:before {
   color: #f43f5e;
 }
 
+/* 问题内容区域样式 */
 .question-content {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 16px;
+  padding: 16px;
+  padding-top: 8px;
+
+  margin-top: 0px;
 }
 
-.question-label,
-.purpose-label {
-  font-size: 13px;
-  font-weight: 500;
-  color: #888888;
-  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  text-transform: uppercase;
-  margin-bottom: 2px;
+/* 2024-08-07T20:00:00Z 修改：移除问题标签样式或隐藏它 */
+.question-label {
+  display: none; /* 隐藏问题标签 */
 }
 
+/* 2024-08-07T20:00:00Z 修改：统一问题和目的文字样式 */
 .question-text {
-  font-size: 16px;
-  font-weight: 400;
+  font-size: 18px;
+  font-weight: 500;
   color: #333333;
-  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   line-height: 1.4;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-.question-status {
-  /* margin-top: 0px; */
+
+/* 2024-08-07T20:00:00Z 修改：将目的标签改为首字母大写 */
+.purpose-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #666666;
+  margin-bottom: 8px;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  text-transform: none; /* 移除全大写转换 */
 }
 
-/* 移除旧的 status-badge 样式 */
-/* .status-badge { ... } */
-/* .has-followup { ... } */
-/* .no-followup { ... } */
+/* 2024-08-07T20:00:00Z 修改：统一目的文字样式与问题文字 */
+.purpose-text {
+  font-size: 18px;
+  font-weight: 500;
+  color: #333333;
+  line-height: 1.4;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
 
 /* 新增 status-item 样式 */
 .status-item {
@@ -385,17 +411,6 @@ input:checked + .switch-label:before {
   font-weight: 400;
   color: #555555;
   font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-.question-purpose {
-  /* margin-top: 0px; */
-}
-
-.purpose-text {
-  font-size: 14px;
-  color: #666666;
-  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  line-height: 1.5;
 }
 
 .add-question-button-container {
@@ -464,4 +479,72 @@ input:checked + .switch-label:before {
     flex-direction: column;
     padding: 15px;
   }
+}
+
+/* 2024-08-06 添加加载容器样式 */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  width: 100%;
+}
+
+/* 新增: 加载效果样式 */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: #3C82F6;
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-message {
+  font-size: 16px;
+  color: #6B7280;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* 2024-08-07T16:00:00Z 新增：只读表单样式 */
+.form-group input.readonly, 
+.form-group textarea.readonly {
+  background-color: #F9F9F9;
+  border-color: #E6E6E9;
+  cursor: default;
+  color: #555555;
+}
+
+/* 2024-08-07T16:00:00Z 新增：Published按钮样式 */
+.published-button {
+  background-color: #35D572 !important;
+  color: white !important;
+  border-color: #35D572 !important;
+}
+
+.published-button:hover {
+  background-color: #2eba61 !important;
+  border-color: #2eba61 !important;
 } 

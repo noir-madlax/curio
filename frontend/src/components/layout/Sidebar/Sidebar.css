@@ -1,5 +1,5 @@
 .sidebar {
-  width: 320px;
+  width: 260px;
   height: 100vh;
   background-color: #FFFFFF;
   border-right: 1px solid #E4E4E7;
@@ -32,6 +32,11 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  text-decoration: none;
+}
+
+.logo-container:hover {
+  text-decoration: none;
 }
 
 .logo-icon {
@@ -72,6 +77,7 @@
   font-weight: 510;
   margin-bottom: 16px;
   font-family: 'SF Pro', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  text-transform: uppercase;
 }
 
 .nav-list {
