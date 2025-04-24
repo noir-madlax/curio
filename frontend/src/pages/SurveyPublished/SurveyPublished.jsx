@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import MainLayout from '../../components/layout/MainLayout/MainLayout';
 import Button from '../../components/common/Button/Button';
+import { getSurveyById } from '../../services/surveyService';
 import './SurveyPublished.css';
 
 // --- 图标导入 --- 
@@ -22,10 +23,33 @@ const SurveyPublished = () => {
   const { surveyId } = useParams(); // 从URL获取surveyId
   const navigate = useNavigate();
   const [activeShareTab, setActiveShareTab] = useState('link');
+  const [survey, setSurvey] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   
-  // 模拟的调查数据 (实际应从API获取)
-  const surveyTitle = "Product Feedback Survey"; 
-  const surveyLink = `https://curio.app/s/${surveyId || 's3pOcr41'}`;
+  // 2024-08-06 新增：从数据库获取问卷数据
+  useEffect(() => {
+    const fetchSurveyData = async () => {
+      try {
+        setIsLoading(true);
+        const surveyData = await getSurveyById(surveyId);
+        setSurvey(surveyData);
+      } catch (err) {
+        console.error('Error fetching survey:', err);
+        setError(err.message || 'Unable to load survey');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    if (surveyId) {
+      fetchSurveyData();
+    }
+  }, [surveyId]);
+  
+  // 从survey对象获取数据，如果尚未加载则使用默认值
+  const surveyTitle = survey?.title || "Loading...";
+  const surveyLink = survey?.surveyLink || `${window.location.origin}/survey/${surveyId}/respond`;
   const responsesCount = 0; // 初始回复数为0
   
   const handleCopyLink = () => {
@@ -46,7 +70,7 @@ const SurveyPublished = () => {
             <div className="share-link-header">
               {/* 使用导入的 SVG */}
               <img src={linkIconBlue} alt="Survey Link Icon" className="icon-img header-icon" /> 
-              <h3>SurveyLink</h3> 
+              <h3>Survey Link</h3> 
             </div>
             <p>Share this link with your respondents to collect responses. Anyone with this link can access your survey.</p>
             <div className="share-link-actions">
@@ -68,6 +92,33 @@ const SurveyPublished = () => {
         return null;
     }
   };
+
+  // 2024-08-06 新增：加载状态显示
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <div className="loading-message">Loading survey data...</div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // 2024-08-06 新增：错误状态显示
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="error-container">
+          <h2>Error</h2>
+          <p>{error}</p>
+          <Button variant="primary" onClick={() => navigate('/surveys')}>
+            Back to Surveys
+          </Button>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>

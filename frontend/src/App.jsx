@@ -13,6 +13,8 @@ function App() {
         <Route path="/" element={<Navigate to="/surveys" replace />} />
         <Route path="/surveys" element={<Survey />} />
         <Route path="/surveys/new" element={<NewSurvey />} />
+        <Route path="/surveys/edit/:id" element={<NewSurvey />} />
+        <Route path="/surveys/view/:id" element={<NewSurvey viewMode={true} />} />
         <Route path="/survey-published/:surveyId" element={<SurveyPublished />} />
         <Route path="/analytics" element={<Survey />} />
         <Route path="/respondents" element={<Survey />} />

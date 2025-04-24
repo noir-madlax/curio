@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-// 2024-07-28: 引入自定义SVG图标
-import './SurveyChatPage.css'; // 引入样式
+// 2024-08-06: Import custom SVG icons
+import './SurveyChatPage.css'; // Import styles
 
-// 2024-07-27: 根据Figma设计稿提供的初始消息
+// 2024-08-06: Initial messages based on Figma design
 const initialMessages = [
   {
     id: 1,
@@ -27,30 +27,30 @@ const initialMessages = [
   }
 ];
 
-// 问卷回答聊天页面组件
+// Survey response chat page component
 function SurveyChatPage() {
-  // 从 URL 中获取 surveyId (暂时未使用，但保留)
+  // Get surveyId from URL (not used yet, but kept for future)
   const { surveyId } = useParams();
-  // 消息列表状态，使用Figma的初始消息
+  // Message list state, using initial messages from Figma
   const [messages, setMessages] = useState(initialMessages);
-  // 输入框内容状态
+  // Input box content state
   const [inputValue, setInputValue] = useState('');
-  // 聊天消息区域的引用，用于自动滚动
+  // Reference for chat message area, used for auto-scrolling
   const messagesEndRef = useRef(null);
-  // 2024-07-27: 模拟进度状态
-  const [progress] = useState(50); // 假设进度为50%
+  // 2024-08-06: Simulate progress state
+  const [progress] = useState(50); // Assume 50% progress
 
-  // 滚动到底部函数
+  // Scroll to bottom function
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // 当消息列表更新时，自动滚动到底部
+  // Auto-scroll to bottom when message list updates
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  // 处理发送消息的函数 (模拟回复逻辑保持简单)
+  // Handle send message function (keep reply logic simple)
   const handleSendMessage = () => {
     const text = inputValue.trim();
     if (text) {
@@ -62,22 +62,22 @@ function SurveyChatPage() {
       const newAiMessage = {
         id: Date.now() + 1,
         sender: 'ai',
-        text: `Received your answer: "${text}". Next question is...` // 保持简单模拟
+        text: `Received your answer: "${text}". Next question is...` // Keep simulation simple
       };
       setMessages(prevMessages => [...prevMessages, newUserMessage, newAiMessage]);
       setInputValue('');
     }
   };
 
-  // 处理输入框内容变化
+  // Handle input box content change
   const handleInputChange = (event) => {
     setInputValue(event.target.value);
-    // 2024-07-27: 简单实现textarea高度自适应
+    // 2024-08-06: Simple implementation of textarea height adaptation
     event.target.style.height = 'auto';
     event.target.style.height = `${event.target.scrollHeight}px`;
   };
 
-  // 处理按 Enter 键发送消息
+  // Handle sending message with Enter key
   const handleKeyDown = (event) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
@@ -87,33 +87,33 @@ function SurveyChatPage() {
 
   return (
     <div className="survey-chat-page">
-      {/* 顶部标题栏 - 2024-07-27: 根据Figma更新 */}
+      {/* Top title bar - 2024-08-06: Updated according to Figma */}
       <header className="chat-header">
         <h1>Product Feedback Survey</h1>
-        {/* 2024-07-27: 关闭按钮 (功能需自行实现) */}
+        {/* 2024-08-06: Close button (functionality needs to be implemented) */}
       </header>
-      {/* 2024-07-27: 进度条 - 根据Figma添加 */}
+      {/* 2024-08-06: Progress bar - Added according to Figma */}
       <div className="progress-bar-container">
         <div className="progress-bar-background"></div>
         <div className="progress-bar-foreground" style={{ width: `${progress}%` }}></div>
       </div>
 
-      {/* 聊天消息区域 - 2024-07-27: 更新渲染逻辑 */}
+      {/* Chat message area - 2024-08-06: Updated rendering logic */}
       <div className="chat-messages">
         {messages.map((message) => (
           <div
             key={message.id}
             className={`message-row ${message.sender === 'ai' ? 'ai-message-row' : 'user-message-row'}`}
           >
-            {/* 2024-07-27: 添加AI头像 */}
+            {/* 2024-08-06: Add AI avatar */}
             {message.sender === 'ai' && (
               <div className="avatar ai-avatar">C</div>
             )}
-            {/* 消息气泡 */}
+            {/* Message bubble */}
             <div className={`message-bubble ${message.sender === 'ai' ? 'ai-message' : 'user-message'}`}>
               <p>{message.text}</p>
             </div>
-            {/* 2024-07-27: 添加用户头像 */}
+            {/* 2024-08-06: Add user avatar */}
             {message.sender === 'user' && (
               <div className="avatar user-avatar">Y</div>
             )}
@@ -122,19 +122,19 @@ function SurveyChatPage() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* 底部输入区域 - 2024-07-27: 根据Figma重构 */}
+      {/* Bottom input area - 2024-08-06: Restructured according to Figma */}
       <div className="chat-input-area">
-        {/* 2024-07-27: 输入框和发送按钮容器 */}
+        {/* 2024-08-06: Input box and send button container */}
         <div className="input-wrapper">
           <textarea
             value={inputValue}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            placeholder="Type your answer..." // 2024-07-27: 更新占位符
+            placeholder="Type your answer..." // 2024-08-06: Updated placeholder
             rows="1"
-            style={{ maxHeight: '100px' }} // 限制最大高度
+            style={{ maxHeight: '100px' }} // Limit maximum height
           />
-          {/* 2024-07-27: 发送图标按钮 - 2024-07-28: 更新为SVG图标 */}
+          {/* 2024-08-06: Send icon button - Updated to SVG icon */}
           <button
             className="send-icon-button"
             onClick={handleSendMessage}
@@ -142,14 +142,6 @@ function SurveyChatPage() {
           >
           </button>
         </div>
-        {/* 移除旧按钮 */}
-        {/* <button
-          className="send-button"
-          onClick={handleSendMessage}
-          disabled={!inputValue.trim()}
-        >
-          发送
-        </button> */}
       </div>
     </div>
   );
@@ -157,26 +149,26 @@ function SurveyChatPage() {
 
 export default SurveyChatPage;
 
-// 2024-07-27: 为进度条添加一些基础CSS (应移至 SurveyChatPage.css)
+// 2024-08-06: Add some basic CSS for progress bar (should be moved to SurveyChatPage.css)
 const styles = `
 .progress-bar-container {
   height: 4px;
-  width: 100%; /* 或者根据Figma调整为固定宽度如 370px */
-  background-color: transparent; /* 容器背景透明 */
-  padding: 0 16px; /* 左右留白 */
+  width: 100%; /* or adjust to fixed width like 370px according to Figma */
+  background-color: transparent; /* transparent container background */
+  padding: 0 16px; /* left-right padding */
   box-sizing: border-box;
 }
 .progress-bar-background {
   height: 4px;
   width: 100%;
-  background-color: #E9E9EB; /* Figma中的灰色背景 D9D9D9 可能太深 */
+  background-color: #E9E9EB; /* Gray background from Figma (D9D9D9 might be too dark) */
   border-radius: 2px;
   position: relative;
 }
 .progress-bar-foreground {
   height: 4px;
   width: 100%;
-  background-color: #3C82F6; /* Figma中的蓝色 2463EB */
+  background-color: #3C82F6; /* Blue from Figma 2463EB */
   border-radius: 2px;
   position: absolute;
   top: 0;
@@ -185,7 +177,7 @@ const styles = `
 }
 `;
 
-// 动态添加样式到head (临时方案)
+// Dynamically add styles to head (temporary solution)
 const styleSheet = document.createElement("style");
 styleSheet.type = "text/css";
 styleSheet.innerText = styles;
