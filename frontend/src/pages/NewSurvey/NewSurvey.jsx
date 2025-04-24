@@ -417,24 +417,18 @@ const NewSurvey = ({ viewMode = false }) => {
           <div className="header-title">
             <h1>
               {isViewing 
-                ? 'View Survey' 
+                ? surveyTitle
                 : isEditing 
                   ? 'Edit Survey' 
                   : 'Create New Survey'
               }
             </h1>
+            {(isViewing && surveyStatus === 'published') && (
+              <span className="published-badge">Published</span>
+            )}
           </div>
           <div className="header-actions">
-            <Button 
-              variant="secondary" 
-              icon={<img src={previewIcon} alt="Preview" className="button-icon" />}
-              onClick={handlePreview}
-              disabled={isLoading}
-            >
-              Preview
-            </Button>
             
-            {/* 2024-08-07T15:45:00Z 修改：在查看模式下或已发布状态下隐藏Save按钮 */}
             {!isViewing && surveyStatus !== 'published' && (
               <Button 
                 variant="secondary" 
@@ -446,8 +440,6 @@ const NewSurvey = ({ viewMode = false }) => {
               </Button>
             )}
             
-            {/* 2024-08-07T15:45:00Z 修改：在查看模式下或已发布状态下显示绿色Published按钮 */}
-            {/* 2024-08-07T17:45:00Z 修改：使用自定义PublishIcon组件，让绿色按钮时使用白色图标 */}
             {(isViewing || surveyStatus === 'published') ? (
               <Button 
                 variant="success" 
@@ -456,7 +448,7 @@ const NewSurvey = ({ viewMode = false }) => {
                 disabled={isLoading}
                 className="published-button"
               >
-                Published
+                Share Survey
               </Button>
             ) : (
               <Button 
@@ -471,21 +463,6 @@ const NewSurvey = ({ viewMode = false }) => {
           </div>
         </div>
         
-        <div className="new-survey-tabs">
-          <div 
-            className={`tab ${activeTab === 'details' ? 'active' : ''}`}
-            onClick={() => !isLoading && handleTabClick('details')}
-          >
-            Survey Details
-          </div>
-          <div 
-            className={`tab ${activeTab === 'questions' ? 'active' : ''}`}
-            onClick={() => !isLoading && handleTabClick('questions')}
-          >
-            Questions
-          </div>
-        </div>
-        
         {isLoading && (
           <div className="loading-overlay">
             <div className="loading-spinner"></div>
@@ -493,299 +470,298 @@ const NewSurvey = ({ viewMode = false }) => {
           </div>
         )}
         
-        {activeTab === 'questions' && questions.length === 0 && (
-            <div className="empty-questions-message">
-              <p>No questions added yet. Add your first question below.</p>
+        <div className="survey-combined-content">
+          {isViewing ? (
+            <div className="survey-description-section">
+              {surveyDescription && (
+                <>
+                  <span className="description-label">Description:</span>
+                  <p className="survey-description">{surveyDescription}</p>
+                </>
+              )}
             </div>
-        )}
-        
-        {activeTab === 'details' && (
-          <div className="survey-details-form">
-            <div className="form-group">
-              <label htmlFor="surveyTitle">Survey Title</label>
-              <input 
-                type="text" 
-                id="surveyTitle" 
-                value={surveyTitle}
-                onChange={(e) => setSurveyTitle(e.target.value)}
-                placeholder="Enter survey title"
-                disabled={isLoading || isViewing}
-                readOnly={isViewing}
-                className={isViewing ? 'readonly' : ''}
-              />
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="surveyDescription">Description</label>
-              <textarea 
-                id="surveyDescription" 
-                value={surveyDescription}
-                onChange={(e) => setSurveyDescription(e.target.value)}
-                placeholder="Describe what this survey is about"
-                rows={2}
-                disabled={isLoading || isViewing}
-                readOnly={isViewing}
-                className={isViewing ? 'readonly' : ''}
-              />
-            </div>
-            
-            {!isViewing && (
-              <div className="form-actions">
-                <Button 
-                  variant="primary" 
-                  onClick={handleNext}
-                  disabled={isLoading}
-                >
-                  Next
-                </Button>
+          ) : (
+            <div className="survey-details-section">
+              <h2 className="section-title">Survey Details</h2>
+              <div className="survey-details-form">
+                <div className="form-group">
+                  <label htmlFor="surveyTitle">Survey Title</label>
+                  <input 
+                    type="text" 
+                    id="surveyTitle" 
+                    value={surveyTitle}
+                    onChange={(e) => setSurveyTitle(e.target.value)}
+                    placeholder="Enter survey title"
+                    disabled={isLoading}
+                    className=""
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="surveyDescription">Description</label>
+                  <textarea 
+                    id="surveyDescription" 
+                    value={surveyDescription}
+                    onChange={(e) => setSurveyDescription(e.target.value)}
+                    placeholder="Describe what this survey is about"
+                    rows={2}
+                    disabled={isLoading}
+                    className=""
+                  />
+                </div>
               </div>
-            )}
-          </div>
-        )}
-        
-        {activeTab === 'questions' && (
-          <div className={`survey-questions ${questions.length === 0 ? 'is-empty' : ''}`}>
-            {questions.length === 0 && !isViewing ? (
-              <>
-                <h2>Add New Question</h2>
-                <div className="add-question-form">
-                  <div className="form-group">
-                    <label htmlFor="questionText">Question Text</label>
-                    <textarea 
-                      id="questionText" 
-                      value={questionText}
-                      onChange={(e) => setQuestionText(e.target.value)}
-                      placeholder="Enter your question here"
-                      rows={2}
-                      disabled={isLoading}
-                    />
-                  </div>
-                  
-                  <div className="form-group switch-group">
-                    <div className="toggle-switch">
-                      <input 
-                        type="checkbox" 
-                        id="followUpSwitch" 
-                        checked={needsFollowUp}
-                        onChange={() => !isLoading && setNeedsFollowUp(!needsFollowUp)}
-                        disabled={isLoading}
-                      />
-                      <label htmlFor="followUpSwitch" className="switch-label"></label>
-                    </div>
-                    <label htmlFor="followUpSwitch" className="switch-text">Needs follow-up questions</label>
-                  </div>
-
-                  <div className="follow-up-explanation">
-                     <img src={infoIcon} alt="Info" className="icon-img info-icon" />
-                     <p>
-                       Enable follow-up questions to let our AI ask contextual questions based on respondents' answers. Provide a purpose for each question to help the AI understand what information you're trying to gather.
-                     </p>
-                  </div>
-                  
-                  {needsFollowUp && (
+            </div>
+          )}
+          
+          <div className="survey-questions-section">
+            <h2 className="section-title">Questions</h2>
+            <div className={`survey-questions ${questions.length === 0 ? 'is-empty' : ''}`}>
+              {questions.length === 0 && !isViewing ? (
+                <>
+                  <h3>Add New Question</h3>
+                  <div className="add-question-form">
                     <div className="form-group">
-                      <label htmlFor="questionPurpose">What is the purpose of this question?</label>
+                      <label htmlFor="questionText">Question Text</label>
                       <textarea 
-                        id="questionPurpose" 
-                        value={questionPurpose}
-                        onChange={(e) => setQuestionPurpose(e.target.value)}
-                        placeholder="Explain the purpose of this question to help Al generate follow-up questions"
+                        id="questionText" 
+                        value={questionText}
+                        onChange={(e) => setQuestionText(e.target.value)}
+                        placeholder="Enter your question here"
                         rows={2}
                         disabled={isLoading}
                       />
                     </div>
-                  )}
-                  
-                  <div className="form-actions question-actions">
-                    <Button 
-                      variant="secondary" 
-                      onClick={handleCancelQuestion}
-                      disabled={isLoading}
-                    >
-                      Cancel
-                    </Button>
-                    <Button 
-                      variant="primary" 
-                      onClick={handleAddQuestion}
-                      disabled={isLoading || !questionText.trim()}
-                    >
-                      {editingQuestionId ? 'Update Question' : 'Add Question'}
-                    </Button>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <>
-                <DragDropContext onDragEnd={handleDragEnd}>
-                  <Droppable droppableId="questionsList">
-                    {(provided) => (
-                      <div 
-                        className="question-list"
-                        {...provided.droppableProps}
-                        ref={provided.innerRef}
-                      >
-                        {questions.map((question, index) => (
-                          <Draggable 
-                            key={question.id} 
-                            draggableId={`question-${question.id}`} 
-                            index={index}
-                            isDragDisabled={isViewing} // 查看模式下禁用拖拽
-                          >
-                            {(provided, snapshot) => (
-                              <div
-                                ref={provided.innerRef}
-                                {...provided.draggableProps}
-                                className={`question-item ${snapshot.isDragging ? 'is-dragging' : ''}`}
-                              >
-                                <div className="question-header">
-                                  <div 
-                                    className="question-drag"
-                                    {...provided.dragHandleProps}
-                                  >
-                                    <img src={dragIcon} alt="Drag" />
-                                    <span className="question-number">Question {question.number}</span>
-                                  </div>
-                                  <div className="question-status">
-                                    {question.needsFollowUp ? (
-                                      <div className="status-item">
-                                        <span className="status-dot green"></span>
-                                        <span className="status-text">Has follow-up questions</span>
-                                      </div>
-                                    ) : (
-                                       <div className="status-item">
-                                        <span className="status-dot grey"></span>
-                                        <span className="status-text">No follow-up questions</span>
-                                      </div>
-                                    )}
-                                  </div>
-                                  
-                                  {/* 2024-08-07T15:45:00Z 修改：在查看模式下隐藏编辑和删除按钮 */}
-                                  {!isViewing && (
-                                    <div className="question-actions-buttons">
-                                      <button className="icon-button" 
-                                        onClick={() => !isLoading && handleEditQuestion(question.id)}
-                                        disabled={isLoading}
-                                      >
-                                        <img src={editIcon} alt="Edit" />
-                                        <span>Edit</span>
-                                      </button>
-                                      <button className="icon-button delete-button" 
-                                        onClick={() => !isLoading && handleDeleteQuestion(question.id)}
-                                        disabled={isLoading}
-                                      >
-                                        <img src={deleteIcon} alt="Delete" />
-                                        <span>Delete</span>
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="question-content">
-                                  <div className="question-text">{question.text}</div>
-                                  
-                                  {question.needsFollowUp && question.purpose && (
-                                    <div className="question-purpose">
-                                      <div className="purpose-label">Purpose</div>
-                                      <div className="purpose-text">{question.purpose}</div>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                          </Draggable>
-                        ))}
-                        {provided.placeholder}
+                    
+                    <div className="form-group switch-group">
+                      <div className="toggle-switch">
+                        <input 
+                          type="checkbox" 
+                          id="followUpSwitch" 
+                          checked={needsFollowUp}
+                          onChange={() => !isLoading && setNeedsFollowUp(!needsFollowUp)}
+                          disabled={isLoading}
+                        />
+                        <label htmlFor="followUpSwitch" className="switch-label"></label>
+                      </div>
+                      <label htmlFor="followUpSwitch" className="switch-text">Needs follow-up questions</label>
+                    </div>
+
+                    <div className="follow-up-explanation">
+                       <img src={infoIcon} alt="Info" className="icon-img info-icon" />
+                       <p>
+                         Enable follow-up questions to let our AI ask contextual questions based on respondents' answers. Provide a purpose for each question to help the AI understand what information you're trying to gather.
+                       </p>
+                    </div>
+                    
+                    {needsFollowUp && (
+                      <div className="form-group">
+                        <label htmlFor="questionPurpose">What is the purpose of this question?</label>
+                        <textarea 
+                          id="questionPurpose" 
+                          value={questionPurpose}
+                          onChange={(e) => setQuestionPurpose(e.target.value)}
+                          placeholder="Explain the purpose of this question to help Al generate follow-up questions"
+                          rows={2}
+                          disabled={isLoading}
+                        />
                       </div>
                     )}
-                  </Droppable>
-                </DragDropContext>
-                
-                {/* 2024-08-07T15:45:00Z 修改：在查看模式下隐藏添加问题表单和按钮 */}
-                {!isViewing && (
-                  showAddForm ? (
-                    <>
-                      <h2>{editingQuestionId ? 'Edit Question' : 'Add New Question'}</h2>
-                      <div className="add-question-form">
-                        <div className="form-group">
-                          <label htmlFor="questionText">Question Text</label>
-                          <textarea 
-                            id="questionText" 
-                            value={questionText}
-                            onChange={(e) => setQuestionText(e.target.value)}
-                            placeholder="Enter your question here"
-                            rows={2}
-                            disabled={isLoading}
-                          />
-                        </div>
-                        
-                        <div className="form-group switch-group">
-                          <div className="toggle-switch">
-                            <input 
-                              type="checkbox" 
-                              id="followUpSwitch_existing"
-                              checked={needsFollowUp}
-                              onChange={() => !isLoading && setNeedsFollowUp(!needsFollowUp)}
-                              disabled={isLoading}
-                            />
-                            <label htmlFor="followUpSwitch_existing" className="switch-label"></label>
+                    
+                    <div className="form-actions question-actions">
+                      <Button 
+                        variant="secondary" 
+                        onClick={handleCancelQuestion}
+                        disabled={isLoading}
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        variant="primary" 
+                        onClick={handleAddQuestion}
+                        disabled={isLoading || !questionText.trim()}
+                      >
+                        {editingQuestionId ? 'Update Question' : 'Add Question'}
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {questions.length === 0 && isViewing ? (
+                    <div className="empty-questions-message">
+                      <p>No questions added yet.</p>
+                    </div>
+                  ) : (
+                    <DragDropContext onDragEnd={handleDragEnd}>
+                      <Droppable droppableId="questionsList">
+                        {(provided) => (
+                          <div 
+                            className="question-list"
+                            {...provided.droppableProps}
+                            ref={provided.innerRef}
+                          >
+                            {questions.map((question, index) => (
+                              <Draggable 
+                                key={question.id} 
+                                draggableId={`question-${question.id}`} 
+                                index={index}
+                                isDragDisabled={isViewing} // 查看模式下禁用拖拽
+                              >
+                                {(provided, snapshot) => (
+                                  <div
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    className={`question-item ${snapshot.isDragging ? 'is-dragging' : ''}`}
+                                  >
+                                    <div className="question-header">
+                                      <div 
+                                        className="question-drag"
+                                        {...provided.dragHandleProps}
+                                      >
+                                        <img src={dragIcon} alt="Drag" />
+                                        <span className="question-number">Question {question.number}</span>
+                                      </div>
+                                      <div className="question-status">
+                                        {question.needsFollowUp ? (
+                                          <div className="status-item">
+                                            <span className="status-dot green"></span>
+                                            <span className="status-text">Has follow-up questions</span>
+                                          </div>
+                                        ) : (
+                                           <div className="status-item">
+                                            <span className="status-dot grey"></span>
+                                            <span className="status-text">No follow-up questions</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                      
+                                      {!isViewing && (
+                                        <div className="question-actions-buttons">
+                                          <button className="icon-button" 
+                                            onClick={() => !isLoading && handleEditQuestion(question.id)}
+                                            disabled={isLoading}
+                                          >
+                                            <img src={editIcon} alt="Edit" />
+                                            <span>Edit</span>
+                                          </button>
+                                          <button className="icon-button delete-button" 
+                                            onClick={() => !isLoading && handleDeleteQuestion(question.id)}
+                                            disabled={isLoading}
+                                          >
+                                            <img src={deleteIcon} alt="Delete" />
+                                            <span>Delete</span>
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="question-content">
+                                      <div className="question-text">{question.text}</div>
+                                      
+                                      {question.needsFollowUp && question.purpose && (
+                                        <div className="question-purpose">
+                                          <div className="purpose-label">Purpose</div>
+                                          <div className="purpose-text">{question.purpose}</div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                              </Draggable>
+                            ))}
+                            {provided.placeholder}
                           </div>
-                          <label htmlFor="followUpSwitch_existing" className="switch-text">Needs follow-up questions</label>
-                        </div>
-
-                        <div className="follow-up-explanation">
-                           <img src={infoIcon} alt="Info" className="icon-img info-icon" />
-                           <p>
-                             Enable follow-up questions to let our AI ask contextual questions based on respondents' answers. Provide a purpose for each question to help the AI understand what information you're trying to gather.
-                           </p>
-                        </div>
-
-                        {needsFollowUp && (
+                        )}
+                      </Droppable>
+                    </DragDropContext>
+                  )}
+                  
+                  {!isViewing && (
+                    showAddForm ? (
+                      <>
+                        <h3>{editingQuestionId ? 'Edit Question' : 'Add New Question'}</h3>
+                        <div className="add-question-form">
                           <div className="form-group">
-                            <label htmlFor="questionPurpose_existing">What is the purpose of this question?</label>
+                            <label htmlFor="questionText">Question Text</label>
                             <textarea 
-                              id="questionPurpose_existing"
-                              value={questionPurpose}
-                              onChange={(e) => setQuestionPurpose(e.target.value)}
-                              placeholder="Explain the purpose of this question to help Al generate follow-up questions"
+                              id="questionText" 
+                              value={questionText}
+                              onChange={(e) => setQuestionText(e.target.value)}
+                              placeholder="Enter your question here"
                               rows={2}
                               disabled={isLoading}
                             />
                           </div>
-                        )}
-                        
-                        <div className="form-actions question-actions">
-                          <Button 
-                            variant="secondary" 
-                            onClick={handleCancelQuestion}
-                            disabled={isLoading}
-                          >
-                            Cancel
-                          </Button>
-                          <Button 
-                            variant="primary" 
-                            onClick={handleAddQuestion}
-                            disabled={isLoading || !questionText.trim()}
-                          >
-                            {editingQuestionId ? 'Update Question' : 'Add Question'}
-                          </Button>
+                          
+                          <div className="form-group switch-group">
+                            <div className="toggle-switch">
+                              <input 
+                                type="checkbox" 
+                                id="followUpSwitch_existing"
+                                checked={needsFollowUp}
+                                onChange={() => !isLoading && setNeedsFollowUp(!needsFollowUp)}
+                                disabled={isLoading}
+                              />
+                              <label htmlFor="followUpSwitch_existing" className="switch-label"></label>
+                            </div>
+                            <label htmlFor="followUpSwitch_existing" className="switch-text">Needs follow-up questions</label>
+                          </div>
+
+                          <div className="follow-up-explanation">
+                             <img src={infoIcon} alt="Info" className="icon-img info-icon" />
+                             <p>
+                               Enable follow-up questions to let our AI ask contextual questions based on respondents' answers. Provide a purpose for each question to help the AI understand what information you're trying to gather.
+                             </p>
+                          </div>
+
+                          {needsFollowUp && (
+                            <div className="form-group">
+                              <label htmlFor="questionPurpose_existing">What is the purpose of this question?</label>
+                              <textarea 
+                                id="questionPurpose_existing"
+                                value={questionPurpose}
+                                onChange={(e) => setQuestionPurpose(e.target.value)}
+                                placeholder="Explain the purpose of this question to help Al generate follow-up questions"
+                                rows={2}
+                                disabled={isLoading}
+                              />
+                            </div>
+                          )}
+                          
+                          <div className="form-actions question-actions">
+                            <Button 
+                              variant="secondary" 
+                              onClick={handleCancelQuestion}
+                              disabled={isLoading}
+                            >
+                              Cancel
+                            </Button>
+                            <Button 
+                              variant="primary" 
+                              onClick={handleAddQuestion}
+                              disabled={isLoading || !questionText.trim()}
+                            >
+                              {editingQuestionId ? 'Update Question' : 'Add Question'}
+                            </Button>
+                          </div>
                         </div>
+                      </>
+                    ) : (
+                      <div className="add-question-button-container">
+                        <button className="add-question-button" 
+                          onClick={() => !isLoading && toggleAddForm()}
+                          disabled={isLoading}
+                        >
+                          <img src={plusIcon} alt="Add" />
+                          <span>Add Question</span>
+                        </button>
                       </div>
-                    </>
-                  ) : (
-                    <div className="add-question-button-container">
-                      <button className="add-question-button" 
-                        onClick={() => !isLoading && toggleAddForm()}
-                        disabled={isLoading}
-                      >
-                        <img src={plusIcon} alt="Add" />
-                        <span>Add Question</span>
-                      </button>
-                    </div>
-                  )
-                )}
-              </>
-            )}
+                    )
+                  )}
+                </>
+              )}
+            </div>
           </div>
-        )}
+        </div>
       </div>
     </MainLayout>
   );

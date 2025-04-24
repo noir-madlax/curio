@@ -177,7 +177,7 @@ const SurveyPublished = () => {
               <p>{responsesCount} responses collected</p>
             </div>
           </div>
-          <Button variant="secondary" onClick={() => navigate(`/surveys/${surveyId}/responses`)}> 
+          <Button variant="secondary" onClick={() => navigate(`/surveys/${surveyId}/results`)}> 
             View Responses
           </Button>
         </div>
