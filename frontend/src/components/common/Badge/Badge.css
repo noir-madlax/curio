@@ -19,4 +19,16 @@
 .badge-draft {
   background-color: #FEF5E9;
   color: #6C300E;
+}
+
+/* 2024-05-25: 添加Completed状态样式，与Published一致 */
+.badge-completed {
+  background-color: #DBFDE6;
+  color: #166434;
+}
+
+/* 2024-05-25: 添加Partial状态样式 */
+.badge-partial {
+  background-color: #FEF9E6;
+  color: #85651C;
 } 

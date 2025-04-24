@@ -4,6 +4,8 @@ import Survey from './pages/Survey/Survey';
 import NewSurvey from './pages/NewSurvey/NewSurvey';
 import SurveyPublished from './pages/SurveyPublished/SurveyPublished';
 import SurveyChatPage from './pages/SurveyRespondent/SurveyChatPage';
+import SurveyResult from './pages/SurveyResult/SurveyResult';
+import SurveyInsight from './pages/SurveyInsight/SurveyInsight';
 import './App.css';
 
 function App() {
@@ -15,7 +17,10 @@ function App() {
         <Route path="/surveys/new" element={<NewSurvey />} />
         <Route path="/surveys/edit/:id" element={<NewSurvey />} />
         <Route path="/surveys/view/:id" element={<NewSurvey viewMode={true} />} />
+        <Route path="/surveys/:surveyId/results" element={<SurveyResult />} />
         <Route path="/survey-published/:surveyId" element={<SurveyPublished />} />
+        <Route path="/insights" element={<SurveyInsight />} />
+        <Route path="/surveys/:surveyId/insights" element={<SurveyInsight />} />
         <Route path="/analytics" element={<Survey />} />
         <Route path="/respondents" element={<Survey />} />
         <Route path="/settings" element={<Survey />} />

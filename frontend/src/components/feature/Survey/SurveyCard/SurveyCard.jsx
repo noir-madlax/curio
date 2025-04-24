@@ -40,10 +40,9 @@ const SurveyCard = ({ survey, onDelete }) => {
     navigate(`/surveys/edit/${id}`);
   };
   
-  // 2024-07-30T12:30:00Z 新增：处理其他按钮点击
+  // 2024-05-24: 更新Results按钮处理函数，导航到SurveyResult页面
   const handleResults = () => {
-    // 结果页面尚未实现
-    console.log('Results for survey', id);
+    navigate(`/surveys/${id}/results`);
   };
   
   const handleView = () => {
@@ -51,9 +50,9 @@ const SurveyCard = ({ survey, onDelete }) => {
     navigate(`/surveys/view/${id}`);
   };
   
+  // 2024-07-25: 更新Insights按钮处理函数，导航到SurveyInsight页面
   const handleInsights = () => {
-    // 分析页面尚未实现
-    console.log('Insights for survey', id);
+    navigate(`/surveys/${id}/insights`);
   };
   
   // 2024-08-07T16:00:00Z 新增：处理删除按钮点击
