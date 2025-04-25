@@ -144,25 +144,48 @@
   gap: 12px;
   position: sticky;
   bottom: 20px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+/* 只保留未登录状态的hover效果 */
+.user-profile.not-logged-in:hover {
+  background-color: #EAEAEB;
 }
 
 .user-avatar {
-  width: 45px;
-  height: 45px;
+  width: 32px;
+  height: 32px;
   background-color: #DEDEDF;
-  border: 3px solid #E1E1E2;
-  border-radius: 90px;
+  border: 2px solid #E1E1E2;
+  border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
   color: #3F3F41;
-  font-size: 17px;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.user-avatar-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.user-avatar-icon {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
 }
 
 .user-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
+  flex-grow: 1;
 }
 
 .user-name {
@@ -173,8 +196,46 @@
 }
 
 .user-email {
-  color: #97979D;
-  font-size: 14.9px;
+  color: #474749;
+  font-size: 14px;
   margin: 0;
   font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Login related styles - 2023-04-26 updated */
+.login-prompt {
+  color: #474749;
+  font-size: 14px;
+  margin: 0;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.user-dropdown {
+  position: absolute;
+  right: 16px;
+  bottom: 80px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  z-index: 1000;
+}
+
+.logout-button {
+  background-color: transparent;
+  color: #4b5563;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 14px;
+  text-align: left;
+  transition: color 0.2s;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.logout-button:hover {
+  color: #1d4ed8;
 } 
