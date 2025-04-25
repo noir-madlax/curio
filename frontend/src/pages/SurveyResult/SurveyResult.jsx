@@ -1,77 +1,28 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '../../components/layout/MainLayout/MainLayout';
 import Badge from '../../components/common/Badge/Badge';
 import './SurveyResult.css';
 
+// 引入服务函数
+import { getSurveyById } from '../../services/surveyService';
+import { 
+  getSurveyResultStats, 
+  getSurveyResponses, 
+  getQuestionCompletionRates, 
+  getResponsesOverTime 
+} from '../../services/resultService';
+
 // 引入图标
 import timeIcon from '../../assets/icons/time_icon.svg';
 // 2024-07-21: 添加view图标
 import viewIcon from '../../assets/icons/view1_icon.svg';
+// 2024-09-26: 添加默认头像
+import avatarDefaultIcon from '../../assets/icons/avatar_default_icon.svg';
 
-// 2024-05-24: 使用静态占位数据，后续可替换为API调用
-const mockSurveyData = {
-  id: 's-001',
-  title: 'Customer Satisfaction Survey',
-  status: 'Published',
-  statistics: {
-    totalResponses: 24,
-    completionRate: 87,
-    avgCompletionTime: '4m 32s',
-    questionCount: 8,
-    respondentCount: 8
-  },
-  // 此处省略图表数据和其他详细信息
-};
-
-// 2024-05-24: 近期回复者的模拟数据
-const mockRespondents = [
-  {
-    id: 'r-001',
-    name: 'Michael Chen',
-    email: 'michael@example.com',
-    date: 'May 20, 2023 • 09:47',
-    completionTime: '4m 03s',
-    status: 'Completed'
-  },
-  {
-    id: 'r-002',
-    name: 'Sarah Lee',
-    email: 'sarah@example.com',
-    date: 'May 20, 2023 • 11:15', 
-    completionTime: '5m 12s',
-    status: 'Completed'
-  },
-  {
-    id: 'r-003',
-    name: 'Alex Johnson',
-    email: 'alex@example.com',
-    date: 'May 20, 2023 • 14:32',
-    completionTime: '3m 45s',
-    status: 'Completed'
-  },
-  {
-    id: 'r-004',
-    name: 'Emily Wilson',
-    email: 'emily@example.com',
-    date: 'May 19, 2023 • 16:08',
-    completionTime: '6m 22s',
-    status: 'Completed'
-  },
-  {
-    id: 'r-005',
-    name: 'David Kim',
-    email: 'david@example.com',
-    date: 'May 19, 2023 • 10:33',
-    completionTime: '2m 55s',
-    status: 'Partial'
-  }
-];
-
-// 2024-05-24: 创建占位头像组件
+// 2024-05-24: 创建头像组件，使用默认图标
 const UserAvatar = ({ name }) => {
-  const initial = name ? name.charAt(0) : 'U';
-  return <div className="respondent-avatar">{initial}</div>;
+  return <img src={avatarDefaultIcon} alt={name} className="respondent-avatar" />;
 };
 
 // 2024-05-24: 使用占位图标，后续将替换为实际SVG
@@ -87,14 +38,58 @@ const SurveyResult = () => {
   const { surveyId } = useParams();
   const navigate = useNavigate();
   
-  // 此处省略实际API调用，直接使用模拟数据
-  const survey = mockSurveyData;
+  // 2024-09-26: 添加状态管理
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [survey, setSurvey] = useState(null);
+  const [statistics, setStatistics] = useState(null);
+  const [respondents, setRespondents] = useState([]);
+  const [questionRates, setQuestionRates] = useState(null);
+  const [responsesOverTime, setResponsesOverTime] = useState(null);
   
   // 2024-05-26: 创建对Recent Respondents区域的引用
   const respondentsRef = useRef(null);
   
   // 2024-07-21: 添加状态来跟踪鼠标悬停的行
   const [hoveredRow, setHoveredRow] = useState(null);
+  
+  // 2024-09-26: 添加数据加载函数
+  useEffect(() => {
+    const fetchSurveyData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // 1. 获取问卷基本信息
+        const surveyData = await getSurveyById(surveyId);
+        setSurvey(surveyData);
+        
+        // 2. 获取问卷统计数据
+        const statsData = await getSurveyResultStats(surveyId);
+        setStatistics(statsData);
+        
+        // 3. 获取回答记录列表
+        const responseData = await getSurveyResponses(surveyId);
+        setRespondents(responseData);
+        
+        // 4. 获取问题完成率数据
+        const questionRatesData = await getQuestionCompletionRates(surveyId);
+        setQuestionRates(questionRatesData);
+        
+        // 5. 获取回答随时间分布数据
+        const timeData = await getResponsesOverTime(surveyId);
+        setResponsesOverTime(timeData);
+        
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching survey results:', error);
+        setError(error.message || 'Failed to load survey results');
+        setLoading(false);
+      }
+    };
+    
+    fetchSurveyData();
+  }, [surveyId]);
   
   // 2024-05-26: 滚动到Recent Respondents区域
   const scrollToRespondents = () => {
@@ -104,13 +99,48 @@ const SurveyResult = () => {
   // 2024-07-21: 添加查看用户聊天回答的处理函数
   const handleViewChat = (respondentId) => {
     console.log('View chat for respondent:', respondentId);
-    // 功能暂不实现
+    // 功能暂不实现，仅打印响应ID
   };
   
   // 2024-07-24: 添加导航到Insight页面的处理函数
   const goToInsights = () => {
     navigate(`/surveys/${surveyId}/insights`);
   };
+
+  // 2024-09-26: 如果正在加载，使用已有的loading样式
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <div className="loading-message">Loading survey results...</div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // 2024-09-26: 如果出现错误，显示错误信息
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="error-container">
+          <p>Error: {error}</p>
+          <button onClick={() => window.location.reload()}>Try Again</button>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // 2024-09-26: 如果没有数据，显示提示信息
+  if (!survey || !statistics) {
+    return (
+      <MainLayout>
+        <div className="empty-state">
+          <p>No survey data available.</p>
+        </div>
+      </MainLayout>
+    );
+  }
   
   return (
     <MainLayout>
@@ -119,8 +149,8 @@ const SurveyResult = () => {
         <div className="survey-result-header">
           <div className="survey-title-info">
             <div className="title-badge-container">
-              <h1>Customer Satisfaction Survey</h1>
-              <Badge status="Published" />
+              <h1>{survey.title}</h1>
+              <Badge status={survey.status} />
             </div>
           </div>
         </div>
@@ -128,17 +158,17 @@ const SurveyResult = () => {
         {/* 统计卡片区域 */}
         <div className="statistics-cards">
           <div className="stat-card">
-            <div className="stat-value">{survey.statistics.totalResponses}</div>
+            <div className="stat-value">{statistics.totalResponses}</div>
             <div className="stat-label">Total Responses</div>
           </div>
           
           <div className="stat-card">
-            <div className="stat-value">{survey.statistics.completionRate}%</div>
+            <div className="stat-value">{statistics.completionRate}%</div>
             <div className="stat-label">Completion Rate</div>
           </div>
           
           <div className="stat-card">
-            <div className="stat-value">{survey.statistics.avgCompletionTime}</div>
+            <div className="stat-value">{statistics.avgCompletionTime}</div>
             <div className="stat-label">Avg. Completion Time</div>
           </div>
         </div>
@@ -159,17 +189,18 @@ const SurveyResult = () => {
             <div className="chart-placeholder responses-chart">
               {/* 日期标签 */}
               <div className="chart-labels">
-                <span>May 17</span>
-                <span>May 18</span>
-                <span>May 19</span>
-                <span>May 20</span>
+                {responsesOverTime && responsesOverTime.dates.map((date, index) => (
+                  <span key={index}>{date}</span>
+                ))}
               </div>
               
-              {/* 图表提示框 */}
-              <div className="chart-tooltip">
-                <div className="tooltip-date">Date: May 17</div>
-                <div className="tooltip-value">8 responses</div>
-              </div>
+              {/* 图表提示框 - 保留原来的静态布局，后续可替换为动态数据 */}
+              {responsesOverTime && responsesOverTime.dates.length > 0 && (
+                <div className="chart-tooltip">
+                  <div className="tooltip-date">Date: {responsesOverTime.dates[0]}</div>
+                  <div className="tooltip-value">{responsesOverTime.counts[0]} responses</div>
+                </div>
+              )}
             </div>
           </div>
           
@@ -179,14 +210,22 @@ const SurveyResult = () => {
             <div className="chart-placeholder completion-chart">
               {/* 问题标签 */}
               <div className="completion-labels">
-                <span className="q-label q1">Q1</span>
-                <span className="q-label q2">Q2</span>
-                <span className="q-label q3">Q3</span>
-                <span className="q-label q4">Q4</span>
-                <span className="q-label q5">Q5</span>
-                <span className="q-label q6">Q6</span>
-                <span className="q-label q7">Q7</span>
-                <span className="q-label q8">Q8</span>
+                {questionRates && questionRates.questions.length > 0 ? (
+                  questionRates.questions.map((q, index) => (
+                    <span key={index} className={`q-label q${index+1}`}>Q{index+1}</span>
+                  ))
+                ) : (
+                  <>
+                    <span className="q-label q1">Q1</span>
+                    <span className="q-label q2">Q2</span>
+                    <span className="q-label q3">Q3</span>
+                    <span className="q-label q4">Q4</span>
+                    <span className="q-label q5">Q5</span>
+                    <span className="q-label q6">Q6</span>
+                    <span className="q-label q7">Q7</span>
+                    <span className="q-label q8">Q8</span>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -205,46 +244,52 @@ const SurveyResult = () => {
               <div className="header-cell">Respondent</div>
               <div className="header-cell">Date</div>
               <div className="header-cell">
-
                 Completion Time
               </div>
               <div className="header-cell">Status</div>
             </div>
             
             {/* 表格内容 */}
-            {mockRespondents.map((respondent, index) => (
-              <div 
-                key={respondent.id} 
-                className="table-row"
-                onMouseEnter={() => setHoveredRow(respondent.id)}
-                onMouseLeave={() => setHoveredRow(null)}
-              >
-                <div className="respondent-cell">
-                  <UserAvatar name={respondent.name} />
-                  <div className="respondent-info">
-                    <div className="respondent-name">{respondent.name}</div>
-                    <div className="respondent-email">{respondent.email}</div>
+            {respondents.length > 0 ? (
+              respondents.map((respondent) => (
+                <div 
+                  key={respondent.id} 
+                  className="table-row"
+                  onMouseEnter={() => setHoveredRow(respondent.id)}
+                  onMouseLeave={() => setHoveredRow(null)}
+                >
+                  <div className="respondent-cell">
+                    <UserAvatar name={respondent.name} />
+                    <div className="respondent-info">
+                      <div className="respondent-name">{respondent.name}</div>
+                      {respondent.email && <div className="respondent-email">{respondent.email}</div>}
+                    </div>
+                  </div>
+                  <div className="date-cell">{respondent.date}</div>
+                  <div className="completion-time-cell">
+                    <img src={timeIcon} alt="Time" className="time-icon" />
+                    {respondent.completionTime}
+                  </div>
+                  <div className="status-cell">
+                    <Badge status={respondent.status} />
+                    {/* 2024-09-26: 修改查看图标显示逻辑，所有行都显示 */}
+                    {hoveredRow === respondent.id && (
+                      <div 
+                        className="view-icon-container" 
+                        onClick={() => handleViewChat(respondent.id)}
+                        title="View response details"
+                      >
+                        <ViewIcon />
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="date-cell">{respondent.date}</div>
-                <div className="completion-time-cell">
-                  <img src={timeIcon} alt="Time" className="time-icon" />
-                  {respondent.completionTime}
-                </div>
-                <div className="status-cell">
-                  <Badge status={respondent.status} />
-                  {/* 2024-07-21: 添加hover时显示的查看图标 */}
-                  {hoveredRow === respondent.id && respondent.status === 'Completed' && (
-                    <div 
-                      className="view-icon-container" 
-                      onClick={() => handleViewChat(respondent.id)}
-                    >
-                      <ViewIcon />
-                    </div>
-                  )}
-                </div>
+              ))
+            ) : (
+              <div className="empty-state">
+                <p>No respondents yet.</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>

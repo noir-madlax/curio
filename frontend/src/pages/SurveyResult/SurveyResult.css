@@ -1,6 +1,7 @@
 /* SurveyResult.css */
 /* 2024-05-24: 创建问卷结果页面的样式，完全还原Figma设计 */
 /* 2024-05-28: 根据Figma设计更新Overview和Recent Respondents区域样式 */
+/* 2024-09-26: 更新头像样式，使用默认头像图标 */
 
 .survey-result-container {
   width: 100%;
@@ -319,13 +320,9 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background-color: #3B82F6;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  font-weight: 500;
-  font-size: 16px;
+  background-color: #fff;
+  object-fit: cover;
+  overflow: hidden;
 }
 
 .respondent-info {
@@ -386,21 +383,23 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  margin-left: 8px;
-  width: 28px;
-  height: 28px;
+  margin-left: 12px;
+  width: 30px;
+  height: 30px;
   border-radius: 4px;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+  background-color: transparent;
 }
 
 .view-icon-container:hover {
-  background-color: #F3F4F6;
+  background-color: rgba(243, 244, 246, 0.3);
 }
 
-/* 2024-07-21: 添加查看图标样式 */
+/* 2024-09-26: 修改查看图标样式 */
 .view-icon {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
+  opacity: 0.7;
 }
 
 /* 响应式设计 */
@@ -441,4 +440,60 @@
   .respondent-email {
     display: none;
   }
+}
+
+/* 2024-09-26: 移除自定义的loading和错误样式，使用现有样式 */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  width: 100%;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: #3C82F6;
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 16px;
+}
+
+.loading-message {
+  font-size: 16px;
+  color: #6B7280;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.empty-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+  background-color: #f9f9f9;
+  border-radius: 6px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+/* 2024-09-26: 修复问题完成率图表的样式 */
+.completion-chart .completion-labels {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 10px;
+}
+
+.q-label {
+  font-size: 12px;
+  color: #666;
 } 

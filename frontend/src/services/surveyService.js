@@ -531,3 +531,9 @@ export const getSurveyResponseConversations = async (responseId) => {
     throw error;
   }
 };
+
+// 2024-09-26: 注意：与问卷结果相关的功能已移至 resultService.js
+// - getSurveyResultStats
+// - getSurveyResponses 
+// - getQuestionCompletionRates
+// - getResponsesOverTime
