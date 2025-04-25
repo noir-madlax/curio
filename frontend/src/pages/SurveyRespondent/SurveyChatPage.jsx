@@ -71,11 +71,6 @@ const generateNumericResponseId = () => {
 
 // 2024-04-26: 获取或创建responseId的函数
 const getOrCreateResponseId = (surveyId) => {
-  // 2024-04-27: 临时调试，直接使用1作为responseId
-  return 1;
-
-  // 原代码保留供参考
-  /*
   // 尝试从localStorage获取已存储的responseId
   const storageKey = 'surveyResponses';
   const storedResponses = JSON.parse(localStorage.getItem(storageKey) || '{}');
@@ -96,7 +91,6 @@ const getOrCreateResponseId = (surveyId) => {
   
   console.log('创建新的responseId:', newResponseId);
   return newResponseId;
-  */
 };
 
 // Survey response chat page component
@@ -148,46 +142,37 @@ function SurveyChatPage() {
   // 2024-04-25: 处理流式响应的函数
   const handleStreamResponse = async (response) => {
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`API请求失败: ${response.status} ${response.statusText}, 详情: ${errorText}`);
       throw new Error(`API请求失败: ${response.status} ${response.statusText}`);
     }
     
-    try {
-      // 获取响应的reader
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      setStreamingMessage(''); // 清空流式消息缓存
+    // 获取响应的reader
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    setStreamingMessage(''); // 清空流式消息缓存
+    
+    let isDone = false;
+    while (!isDone) {
+      const { value, done } = await reader.read();
+      isDone = done;
       
-      let isDone = false;
-      while (!isDone) {
-        const { value, done } = await reader.read();
-        isDone = done;
-        
-        if (done) {
-          // 流结束，将缓存的消息添加到消息列表
-          setMessages(prevMessages => [
-            ...prevMessages,
-            {
-              id: Date.now(),
-              sender: 'ai',
-              text: streamingMessage || '无法获取回复，请重试'
-            }
-          ]);
-          setStreamingMessage(''); // 清空流式消息缓存
-          setIsLoading(false);
-          break;
-        }
-        
-        // 解码当前块并添加到缓存
-        const chunk = decoder.decode(value, { stream: true });
-        console.log('接收到数据块:', chunk);
-        setStreamingMessage(prev => prev + chunk);
+      if (done) {
+        // 流结束，将缓存的消息添加到消息列表
+        setMessages(prevMessages => [
+          ...prevMessages,
+          {
+            id: Date.now(),
+            sender: 'ai',
+            text: streamingMessage
+          }
+        ]);
+        setStreamingMessage(''); // 清空流式消息缓存
+        setIsLoading(false);
+        break;
       }
-    } catch (error) {
-      console.error('处理流式响应时出错:', error);
-      setIsLoading(false);
-      throw error;
+      
+      // 解码当前块并添加到缓存
+      const chunk = decoder.decode(value, { stream: true });
+      setStreamingMessage(prev => prev + chunk);
     }
   };
 
