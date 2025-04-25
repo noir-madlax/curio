@@ -447,7 +447,7 @@ export const reorderQuestions = async (surveyId, newOrder) => {
     console.error(`Error in reorderQuestions service for Survey ID ${surveyId}:`, error);
     throw error;
   }
-};
+}; 
 
 // 2024-04-25: 聊天相关的服务已移动到单独的chatService.js文件中
 // export const startSurveyChat = async (responseId) => { ... }

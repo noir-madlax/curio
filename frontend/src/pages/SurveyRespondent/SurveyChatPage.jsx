@@ -12,6 +12,93 @@ import { startSurveyChat, sendSurveyMessage } from '../../services/chatService';
 // 2024-08-23: 定义问题总数，用于计算进度
 const TOTAL_QUESTIONS = 5;
 
+// 2024-04-26: 简单的设备标识符生成函数
+const generateDeviceId = () => {
+  const nav = window.navigator;
+  const screen = window.screen;
+  const idComponents = [
+    nav.userAgent.slice(0, 20), // 取用户代理前20个字符
+    screen.width,
+    screen.height,
+    new Date().getTimezoneOffset()
+  ];
+  // 简单哈希函数
+  let hash = 0;
+  const str = idComponents.join('_');
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // 转换为32位整数
+  }
+  return Math.abs(hash).toString(16).substring(0, 8); // 转为16进制并取前8位
+};
+
+// 为String添加hashCode方法（类似Java的实现）
+if (!String.prototype.hashCode) {
+  String.prototype.hashCode = function() {
+    let hash = 0;
+    for (let i = 0; i < this.length; i++) {
+      const char = this.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // 转为32位整数
+    }
+    return hash;
+  };
+}
+
+// 简单计算字符串哈希值的函数
+const calculateHash = (str) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // 转为32位整数
+  }
+  return hash;
+};
+
+// 2024-04-26: 生成唯一的数字responseId
+const generateNumericResponseId = () => {
+  // 使用时间戳后8位数字 (确保不超过JS整数限制)
+  const timestampPart = Date.now() % 100000000;
+  // 生成设备标识符
+  const deviceId = generateDeviceId();
+  // 使用设备标识符的哈希值后4位（转为数字）
+  const devicePart = Math.abs(calculateHash(deviceId)) % 10000;
+  // 组合为12位数字
+  return timestampPart * 10000 + devicePart;
+};
+
+// 2024-04-26: 获取或创建responseId的函数
+const getOrCreateResponseId = (surveyId) => {
+  // 2024-04-27: 临时调试，直接使用1作为responseId
+  return 1;
+
+  // 原代码保留供参考
+  /*
+  // 尝试从localStorage获取已存储的responseId
+  const storageKey = 'surveyResponses';
+  const storedResponses = JSON.parse(localStorage.getItem(storageKey) || '{}');
+  const surveyKey = `survey_${surveyId}`;
+  
+  // 如果已存在该问卷的responseId，直接返回
+  if (storedResponses[surveyKey]) {
+    console.log('使用已存在的responseId:', storedResponses[surveyKey]);
+    return storedResponses[surveyKey];
+  }
+  
+  // 生成新的纯数字responseId
+  const newResponseId = generateNumericResponseId();
+  
+  // 存储到localStorage
+  storedResponses[surveyKey] = newResponseId;
+  localStorage.setItem(storageKey, JSON.stringify(storedResponses));
+  
+  console.log('创建新的responseId:', newResponseId);
+  return newResponseId;
+  */
+};
+
 // Survey response chat page component
 function SurveyChatPage() {
   // Get surveyId and responseId from URL
@@ -21,8 +108,15 @@ function SurveyChatPage() {
   const queryParams = new URLSearchParams(location.search);
   const responseIdFromQuery = queryParams.get('responseId');
   
-  // 2024-04-25: 增加responseId状态，暂时使用固定值1（从数据库第一条记录）
-  const [responseId, setResponseId] = useState(responseIdFromQuery); // 默认使用1作为responseId
+  // 2024-04-26: 使用getOrCreateResponseId函数获取responseId
+  const [responseId, setResponseId] = useState(() => {
+    // 优先使用URL中的responseId参数
+    if (responseIdFromQuery) {
+      return responseIdFromQuery;
+    }
+    // 其次使用localStorage中存储的或新生成的responseId
+    return getOrCreateResponseId(surveyId);
+  });
   
   // Message list state, starting with empty array
   const [messages, setMessages] = useState([]);
@@ -54,37 +148,46 @@ function SurveyChatPage() {
   // 2024-04-25: 处理流式响应的函数
   const handleStreamResponse = async (response) => {
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`API请求失败: ${response.status} ${response.statusText}, 详情: ${errorText}`);
       throw new Error(`API请求失败: ${response.status} ${response.statusText}`);
     }
     
-    // 获取响应的reader
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    setStreamingMessage(''); // 清空流式消息缓存
-    
-    let isDone = false;
-    while (!isDone) {
-      const { value, done } = await reader.read();
-      isDone = done;
+    try {
+      // 获取响应的reader
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      setStreamingMessage(''); // 清空流式消息缓存
       
-      if (done) {
-        // 流结束，将缓存的消息添加到消息列表
-        setMessages(prevMessages => [
-          ...prevMessages,
-          {
-            id: Date.now(),
-            sender: 'ai',
-            text: streamingMessage
-          }
-        ]);
-        setStreamingMessage(''); // 清空流式消息缓存
-        setIsLoading(false);
-        break;
+      let isDone = false;
+      while (!isDone) {
+        const { value, done } = await reader.read();
+        isDone = done;
+        
+        if (done) {
+          // 流结束，将缓存的消息添加到消息列表
+          setMessages(prevMessages => [
+            ...prevMessages,
+            {
+              id: Date.now(),
+              sender: 'ai',
+              text: streamingMessage || '无法获取回复，请重试'
+            }
+          ]);
+          setStreamingMessage(''); // 清空流式消息缓存
+          setIsLoading(false);
+          break;
+        }
+        
+        // 解码当前块并添加到缓存
+        const chunk = decoder.decode(value, { stream: true });
+        console.log('接收到数据块:', chunk);
+        setStreamingMessage(prev => prev + chunk);
       }
-      
-      // 解码当前块并添加到缓存
-      const chunk = decoder.decode(value, { stream: true });
-      setStreamingMessage(prev => prev + chunk);
+    } catch (error) {
+      console.error('处理流式响应时出错:', error);
+      setIsLoading(false);
+      throw error;
     }
   };
 
@@ -163,7 +266,15 @@ function SurveyChatPage() {
     }
   };
 
-  // 2024-04-25: 移除调试日志
+  // 2024-04-26: 添加调试信息，仅在开发环境显示
+  useEffect(() => {
+    // 2024-04-26: 修正环境变量访问方式
+    const isDevelopment = import.meta.env.DEV;
+    if (isDevelopment) {
+      console.log('当前问卷ID:', surveyId);
+      console.log('当前响应ID:', responseId);
+    }
+  }, [surveyId, responseId]);
 
   return (
     <div className="survey-chat-page">
