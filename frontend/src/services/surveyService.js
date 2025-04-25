@@ -452,3 +452,82 @@ export const reorderQuestions = async (surveyId, newOrder) => {
 // 2024-04-25: 聊天相关的服务已移动到单独的chatService.js文件中
 // export const startSurveyChat = async (responseId) => { ... }
 // export const sendSurveyMessage = async (responseId, message) => { ... }
+
+// 2024-09-24: 创建新的问卷响应记录
+export const createSurveyResponse = async (surveyId, respondentIdentifier = null) => {
+  console.log(`createSurveyResponse 被调用，Survey ID: ${surveyId}`);
+  try {
+    // 准备要插入的数据
+    const newResponseData = {
+      survey_id: surveyId,
+      status: 'pending', // 默认状态为 pending
+      respondent_identifier: respondentIdentifier || `anonymous_${Date.now()}` // 如果没有提供标识符，创建一个匿名标识符
+    };
+
+    // 执行 Supabase 插入操作
+    const { data, error } = await supabase
+      .from('cu_survey_responses')
+      .insert([newResponseData])
+      .select(); // 获取插入后的完整行数据
+
+    if (error) {
+      console.error('Supabase error creating survey response:', error);
+      throw new Error(error.message || '创建问卷响应记录失败');
+    }
+
+    if (data && data.length > 0) {
+      return data[0]; // 返回创建的响应记录
+    } else {
+      throw new Error('无法获取创建的问卷响应数据');
+    }
+
+  } catch (error) {
+    console.error('Error in createSurveyResponse service:', error);
+    throw error;
+  }
+};
+
+// 2024-09-24: 根据ID获取问卷响应记录
+export const getSurveyResponseById = async (responseId) => {
+  console.log(`getSurveyResponseById 被调用，Response ID: ${responseId}`);
+  try {
+    const { data, error } = await supabase
+      .from('cu_survey_responses')
+      .select('*')
+      .eq('id', responseId)
+      .single();
+
+    if (error) {
+      console.error(`Supabase error fetching survey response ${responseId}:`, error);
+      throw new Error(error.message || '获取问卷响应记录失败');
+    }
+
+    return data;
+  } catch (error) {
+    console.error(`Error in getSurveyResponseById service for ID ${responseId}:`, error);
+    throw error;
+  }
+};
+
+// 2024-09-25: 获取调查问卷响应的对话历史
+export const getSurveyResponseConversations = async (responseId) => {
+  console.log(`getSurveyResponseConversations 被调用，Response ID: ${responseId}`);
+  try {
+    const { data, error } = await supabase
+      .from('cu_survey_response_conversations')
+      .select('id, survey_response_id, speaker_type, message_text, conversation_order, created_at')
+      .eq('survey_response_id', responseId)
+      .order('conversation_order', { ascending: true });
+
+    if (error) {
+      console.error(`Supabase error fetching conversations for response ${responseId}:`, error);
+      throw new Error(error.message || '获取对话历史记录失败');
+    }
+
+    console.log(`从数据库获取到 ${data?.length || 0} 条对话记录`);
+    return data || [];
+  } catch (error) {
+    console.error(`Error in getSurveyResponseConversations service for ID ${responseId}:`, error);
+    throw error;
+  }
+};

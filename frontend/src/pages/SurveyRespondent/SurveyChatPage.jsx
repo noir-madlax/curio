@@ -6,91 +6,103 @@ import './SurveyChatPage.css'; // Import styles
 import sendIcon from '../../assets/icons/send_chat_icon.svg';
 // 2024-04-25: 导入聊天服务函数，从专门的chatService.js中导入
 import { startSurveyChat, sendSurveyMessage } from '../../services/chatService';
-
-// 2024-04-25: 移除初始静态消息
+// 2024-09-24: 导入调查问卷响应服务函数
+import { createSurveyResponse, getSurveyResponseById, getSurveyResponseConversations } from '../../services/surveyService';
 
 // 2024-08-23: 定义问题总数，用于计算进度
 const TOTAL_QUESTIONS = 5;
 
-// 2024-04-26: 简单的设备标识符生成函数
-const generateDeviceId = () => {
-  const nav = window.navigator;
-  const screen = window.screen;
-  const idComponents = [
-    nav.userAgent.slice(0, 20), // 取用户代理前20个字符
-    screen.width,
-    screen.height,
-    new Date().getTimezoneOffset()
-  ];
-  // 简单哈希函数
-  let hash = 0;
-  const str = idComponents.join('_');
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash; // 转换为32位整数
-  }
-  return Math.abs(hash).toString(16).substring(0, 8); // 转为16进制并取前8位
-};
-
-// 为String添加hashCode方法（类似Java的实现）
-if (!String.prototype.hashCode) {
-  String.prototype.hashCode = function() {
-    let hash = 0;
-    for (let i = 0; i < this.length; i++) {
-      const char = this.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // 转为32位整数
-    }
-    return hash;
-  };
-}
-
-// 简单计算字符串哈希值的函数
-const calculateHash = (str) => {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // 转为32位整数
-  }
-  return hash;
-};
-
-// 2024-04-26: 生成唯一的数字responseId
-const generateNumericResponseId = () => {
-  // 使用时间戳后8位数字 (确保不超过JS整数限制)
-  const timestampPart = Date.now() % 100000000;
-  // 生成设备标识符
-  const deviceId = generateDeviceId();
-  // 使用设备标识符的哈希值后4位（转为数字）
-  const devicePart = Math.abs(calculateHash(deviceId)) % 10000;
-  // 组合为12位数字
-  return timestampPart * 10000 + devicePart;
-};
-
-// 2024-04-26: 获取或创建responseId的函数
-const getOrCreateResponseId = (surveyId) => {
+// 2024-09-24: 更新获取或创建responseId的函数，使用 Supabase
+const getOrCreateResponseId = async (surveyId) => {
   // 尝试从localStorage获取已存储的responseId
-  const storageKey = 'surveyResponses';
-  const storedResponses = JSON.parse(localStorage.getItem(storageKey) || '{}');
-  const surveyKey = `survey_${surveyId}`;
+  const storageKey = 'survey_respond_id';
+  const storedResponseId = localStorage.getItem(storageKey);
   
-  // 如果已存在该问卷的responseId，直接返回
-  if (storedResponses[surveyKey]) {
-    console.log('使用已存在的responseId:', storedResponses[surveyKey]);
-    return storedResponses[surveyKey];
+  // 如果已存在该问卷的responseId，验证它是否存在于数据库中
+  if (storedResponseId) {
+    console.log('发现已存储的responseId:', storedResponseId);
+    try {
+      // 验证responseId是否有效
+      const response = await getSurveyResponseById(storedResponseId);
+      if (response && response.survey_id === parseInt(surveyId)) {
+        console.log('使用已存在的有效responseId:', storedResponseId);
+        return storedResponseId;
+      } else {
+        console.log('已存储的responseId无效或属于不同的调查问卷，需要创建新的');
+        // 继续执行，创建新的responseId
+      }
+    } catch (error) {
+      console.error('验证responseId时出错:', error);
+      // 继续执行，创建新的responseId
+    }
   }
   
-  // 生成新的纯数字responseId
-  const newResponseId = generateNumericResponseId();
-  
-  // 存储到localStorage
-  storedResponses[surveyKey] = newResponseId;
-  localStorage.setItem(storageKey, JSON.stringify(storedResponses));
-  
-  console.log('创建新的responseId:', newResponseId);
-  return newResponseId;
+  // 创建新的问卷响应记录
+  try {
+    const newResponse = await createSurveyResponse(surveyId);
+    const newResponseId = newResponse.id;
+    
+    // 存储到localStorage
+    localStorage.setItem(storageKey, newResponseId.toString());
+    
+    console.log('创建新的responseId:', newResponseId);
+    return newResponseId;
+  } catch (error) {
+    console.error('创建新的responseId失败:', error);
+    throw error;
+  }
+};
+
+// 2024-09-25: 加载对话历史记录
+const loadConversationHistory = async (responseId) => {
+  try {
+    console.log('加载对话历史记录，Response ID:', responseId);
+    const conversations = await getSurveyResponseConversations(responseId);
+    
+    if (!conversations || conversations.length === 0) {
+      console.log('没有找到对话历史记录');
+      return [];
+    }
+    
+    console.log(`找到 ${conversations.length} 条对话记录:`, conversations);
+    
+    // 将对话记录转换为前端消息格式
+    const messages = [];
+    
+    for (const conv of conversations) {
+      // 打印每条记录以便调试
+      console.log('处理对话记录:', conv);
+      
+      // 使用正确的字段名: speaker_type 和 message_text
+      const speakerType = conv.speaker_type ? conv.speaker_type.toLowerCase() : '';
+      const messageText = conv.message_text || '';
+      
+      // 只处理用户和AI的消息
+      if (speakerType === 'user' || speakerType === 'assistant' || 
+          speakerType === 'human' || speakerType === 'ai') {
+        messages.push({
+          id: conv.id,
+          sender: (speakerType === 'user' || speakerType === 'human') ? 'user' : 'ai',
+          text: messageText,
+        });
+      } else {
+        console.log('跳过不支持的角色类型的对话记录:', conv);
+      }
+    }
+    
+    // 按照对话顺序排序
+    messages.sort((a, b) => {
+      const orderA = conversations.find(c => c.id === a.id)?.conversation_order || 0;
+      const orderB = conversations.find(c => c.id === b.id)?.conversation_order || 0;
+      return orderA - orderB;
+    });
+    
+    console.log('转换后的消息列表:', messages);
+    return messages;
+  } catch (error) {
+    console.error('加载对话历史记录失败:', error);
+    return [];
+  }
 };
 
 // Survey response chat page component
@@ -102,15 +114,13 @@ function SurveyChatPage() {
   const queryParams = new URLSearchParams(location.search);
   const responseIdFromQuery = queryParams.get('responseId');
   
-  // 2024-04-26: 使用getOrCreateResponseId函数获取responseId
-  const [responseId, setResponseId] = useState(() => {
-    // 优先使用URL中的responseId参数
-    if (responseIdFromQuery) {
-      return responseIdFromQuery;
-    }
-    // 其次使用localStorage中存储的或新生成的responseId
-    return getOrCreateResponseId(surveyId);
-  });
+  // 2024-09-24: 更新状态初始化和获取逻辑
+  const [responseId, setResponseId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
+  // 2024-09-25: 添加初始化标志，防止重复初始化
+  const hasInitialized = useRef(false);
+  const chatInitialized = useRef(false);
   
   // Message list state, starting with empty array
   const [messages, setMessages] = useState([]);
@@ -139,7 +149,7 @@ function SurveyChatPage() {
     scrollToBottom();
   }, [messages, streamingMessage]);
 
-  // 2024-04-25: 处理流式响应的函数
+  // 2024-09-25: 优化流式响应处理函数，实现打字机效果
   const handleStreamResponse = async (response) => {
     if (!response.ok) {
       throw new Error(`API请求失败: ${response.status} ${response.statusText}`);
@@ -148,37 +158,190 @@ function SurveyChatPage() {
     // 获取响应的reader
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
-    setStreamingMessage(''); // 清空流式消息缓存
     
-    let isDone = false;
-    while (!isDone) {
-      const { value, done } = await reader.read();
-      isDone = done;
-      
-      if (done) {
-        // 流结束，将缓存的消息添加到消息列表
-        setMessages(prevMessages => [
-          ...prevMessages,
-          {
-            id: Date.now(),
-            sender: 'ai',
-            text: streamingMessage
+    // 开始接收前清空流式消息
+    setStreamingMessage('');
+    setIsLoading(true);
+    
+    let buffer = '';
+    let messageContent = '';
+    let displayedContent = ''; // 跟踪实际显示的内容
+    
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        
+        // 流结束处理
+        if (done) {
+          console.log('流结束，最终消息长度:', messageContent.length);
+          
+          // 确保所有内容都已经显示
+          if (displayedContent !== messageContent) {
+            setStreamingMessage(messageContent);
           }
-        ]);
-        setStreamingMessage(''); // 清空流式消息缓存
-        setIsLoading(false);
-        break;
+          
+          // 短暂延迟后将完整消息添加到消息列表，并清空流式消息
+          setTimeout(() => {
+            if (messageContent.trim()) {
+              setMessages(prevMessages => [...prevMessages, {
+                id: Date.now(),
+                sender: 'ai',
+                text: messageContent.trim()
+              }]);
+            }
+            setStreamingMessage('');
+            setIsLoading(false);
+          }, 500);
+          
+          break;
+        }
+        
+        // 解码接收到的块并添加到缓冲区
+        buffer += decoder.decode(value, { stream: true });
+        
+        // 处理缓冲区中的数据行
+        const lines = buffer.split('\n');
+        
+        // 保留最后一行（可能不完整）
+        buffer = lines.pop() || '';
+        
+        let newContent = '';
+        
+        // 处理完整的行
+        for (const line of lines) {
+          const trimmedLine = line.trim();
+          if (trimmedLine.startsWith('data:')) {
+            const data = trimmedLine.substring(5).trim();
+            
+            // 检查是否是完成标记
+            if (data === '[DONE]') {
+              console.log('收到 [DONE] 标记');
+              continue;
+            }
+            
+            // 添加到新内容
+            newContent += data;
+          } else if (trimmedLine && !trimmedLine.startsWith('event:')) {
+            // 处理非空、非data开头、非event开头的行
+            newContent += trimmedLine;
+          }
+        }
+        
+        // 有新内容时，更新完整消息
+        if (newContent) {
+          messageContent += newContent;
+          
+          // 计算尚未显示的字符数
+          const remainingChars = messageContent.length - displayedContent.length;
+          
+          // 如果有很多未显示字符，分批显示以实现打字机效果
+          if (remainingChars > 0) {
+            const typingSpeed = 10; // 每个字符的毫秒间隔
+            const batchSize = 3;    // 每批显示的字符数
+            
+            for (let i = 0; i < remainingChars; i += batchSize) {
+              const charsToAdd = Math.min(batchSize, remainingChars - i);
+              
+              // 延迟显示，创建打字机效果
+              setTimeout(() => {
+                displayedContent = messageContent.substring(0, displayedContent.length + charsToAdd);
+                setStreamingMessage(displayedContent);
+              }, (i / batchSize) * typingSpeed);
+            }
+            
+            // 确保最终显示完整消息
+            setTimeout(() => {
+              displayedContent = messageContent;
+              setStreamingMessage(displayedContent);
+            }, (remainingChars / batchSize) * typingSpeed);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('流读取过程中出错:', error);
+      
+      // 确保即使出错，已接收的消息也能显示
+      if (messageContent.trim()) {
+        setMessages(prevMessages => [...prevMessages, {
+          id: Date.now(),
+          sender: 'ai',
+          text: messageContent.trim()
+        }]);
       }
       
-      // 解码当前块并添加到缓存
-      const chunk = decoder.decode(value, { stream: true });
-      setStreamingMessage(prev => prev + chunk);
+      setStreamingMessage('');
+      setIsLoading(false);
+      setError(`流式读取错误: ${error.message}`);
     }
   };
 
-  // 2024-04-25: 初始化对话，在组件加载时调用
+  // 2024-09-25: 使用useEffect异步获取responseId
   useEffect(() => {
-    if (responseId) {
+    // 2024-09-25: 防止重复初始化
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
+    
+    const initResponseId = async () => {
+      try {
+        // 优先使用URL中的responseId参数
+        let id;
+        let isExistingResponse = false;
+        
+        if (responseIdFromQuery) {
+          id = responseIdFromQuery;
+        } else {
+          // 检查localStorage中是否有responseId
+          const storageKey = 'survey_respond_id';
+          const storedResponseId = localStorage.getItem(storageKey);
+          
+          if (storedResponseId) {
+            // 验证storedResponseId是否有效
+            try {
+              const response = await getSurveyResponseById(storedResponseId);
+              if (response && response.survey_id === parseInt(surveyId)) {
+                id = storedResponseId;
+                isExistingResponse = true; // 标记为已存在的响应
+              }
+            } catch (error) {
+              console.error('验证存储的responseId时出错:', error);
+            }
+          }
+          
+          // 如果没有有效的responseId，创建新的
+          if (!id) {
+            const newResponse = await createSurveyResponse(surveyId);
+            id = newResponse.id;
+            localStorage.setItem(storageKey, id.toString());
+          }
+        }
+        
+        setResponseId(id);
+        
+        // 如果是已存在的响应，加载对话历史
+        if (isExistingResponse) {
+          const historyMessages = await loadConversationHistory(id);
+          if (historyMessages && historyMessages.length > 0) {
+            setMessages(historyMessages);
+            // 已加载历史，不需要重新开始对话
+            chatInitialized.current = true;
+          }
+        }
+      } catch (error) {
+        console.error('初始化responseId失败:', error);
+        setError('初始化对话失败。请刷新页面重试。');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    initResponseId();
+  }, [surveyId, responseIdFromQuery]);
+  
+  // 2024-09-25: 初始化对话逻辑，等待responseId准备好，并检查是否已经有对话历史
+  useEffect(() => {
+    if (responseId && !loading && !chatInitialized.current) {
+      chatInitialized.current = true;
+      
       const initializeChat = async () => {
         try {
           setIsLoading(true);
@@ -191,14 +354,15 @@ function SurveyChatPage() {
           console.error('初始化对话失败:', err);
           setError('无法开始对话。请刷新页面重试。');
           setIsLoading(false);
+          chatInitialized.current = false; // 初始化失败，重置标志以便重试
         }
       };
       
       initializeChat();
-    } else {
+    } else if (!loading && !responseId) {
       setError('缺少必要的参数(responseId)。无法开始对话。');
     }
-  }, [responseId]); // 仅在responseId改变时执行
+  }, [responseId, loading]); // 在responseId和loading改变时执行
   
   // Handle send message function
   const handleSendMessage = async () => {
@@ -319,7 +483,7 @@ function SurveyChatPage() {
           </div>
         )}
         
-        {/* 加载中指示器 */}
+        {/* 加载中指示器 - 仅在无流式消息时显示 */}
         {isLoading && !streamingMessage && (
           <div className="message-row ai-message-row">
             <div className="avatar ai-avatar">C</div>
