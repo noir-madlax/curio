@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import MainLayout from '../../components/layout/MainLayout/MainLayout';
 import Button from '../../components/common/Button/Button';
+import Badge from '../../components/common/Badge/Badge';
 import './NewSurvey.css';
 import { 
   createSurvey, 
@@ -424,7 +425,7 @@ const NewSurvey = ({ viewMode = false }) => {
               }
             </h1>
             {(isViewing && surveyStatus === 'published') && (
-              <span className="published-badge">Published</span>
+              <Badge status="Published" />
             )}
           </div>
           <div className="header-actions">
@@ -615,8 +616,8 @@ const NewSurvey = ({ viewMode = false }) => {
                                   >
                                     <div className="question-header">
                                       <div 
-                                        className="question-drag"
-                                        {...provided.dragHandleProps}
+                                        className={`question-drag ${isViewing ? 'view-mode' : ''}`}
+                                        {...(isViewing ? {} : provided.dragHandleProps)}
                                       >
                                         <img src={dragIcon} alt="Drag" />
                                         <span className="question-number">Question {question.number}</span>

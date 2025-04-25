@@ -320,3 +320,20 @@
     font-size: 12px;
   }
 } 
+
+/* 2024-04-25: 新增错误消息样式 */
+.error-message {
+  margin: 10px auto;
+  padding: 10px 15px;
+  background-color: #ffebee;
+  border: 1px solid #f44336;
+  border-radius: 8px;
+  color: #d32f2f;
+  font-size: 14px;
+  text-align: center;
+  max-width: 90%;
+}
+
+.error-message p {
+  margin: 0;
+} 

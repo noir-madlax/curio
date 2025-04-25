@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import './Sidebar.css';
+import UserProfile from './UserProfile';
 
 // 导入SVG图标
 import curioLogo from '../../../assets/icons/Curio_logo.svg';
@@ -85,13 +86,7 @@ const Sidebar = () => {
         </div>
       </div>
       
-      <div className="user-profile">
-        <div className="user-avatar">YH</div>
-        <div className="user-info">
-          <p className="user-name">Yusuf Hilmi</p>
-          <p className="user-email">yusuf@example.com</p>
-        </div>
-      </div>
+      <UserProfile />
     </div>
   );
 };

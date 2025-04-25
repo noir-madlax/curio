@@ -283,13 +283,19 @@ input:checked + .switch-label:before {
 .question-drag {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
+  gap: 8px;
   cursor: grab;
+  min-width: 130px; /* 2024-08-12T15:00:00Z 添加：确保标题和目的对齐 */
 }
 
 .question-drag:active {
   cursor: grabbing;
+}
+
+/* 2024-08-12T15:00:00Z 添加：查看模式下的拖拽按钮样式 */
+.question-drag.view-mode {
+  cursor: default;
+  opacity: 0.7;
 }
 
 .question-header {
@@ -343,10 +349,11 @@ input:checked + .switch-label:before {
 .question-content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 16px;
-  padding-top: 8px;
-
+  gap: 12px;
+  padding: 20px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-radius: 8px;
   margin-top: 0px;
 }
 
@@ -366,10 +373,11 @@ input:checked + .switch-label:before {
 
 
 /* 2024-08-07T20:00:00Z 修改：将目的标签改为首字母大写 */
+/* 2024-08-12T15:00:00Z 修改：弱化Purpose标签样式 */
 .purpose-label {
-  font-size: 16px;
-  font-weight: 600;
-  color: #666666;
+  font-size: 14px;
+  font-weight: 500;
+  color: #888888;
   margin-bottom: 8px;
   font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   text-transform: none; /* 移除全大写转换 */
@@ -578,17 +586,6 @@ input:checked + .switch-label:before {
   gap: 12px;
 }
 
-.published-badge {
-  font-family: 'Inter', sans-serif;
-  font-weight: 500;
-  font-size: 14px;
-  color: #43855A;
-  background-color: #DCFCE7;
-  padding: 4px 10px;
-  border-radius: 6px;
-  display: inline-block;
-}
-
 /* 2024-08-10T12:00:00Z 添加：问卷描述样式 */
 .survey-description-section {
   margin-bottom: 0;
@@ -612,4 +609,11 @@ input:checked + .switch-label:before {
   font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   font-style: italic;
   display: inline;
+}
+
+/* 2024-08-12T15:00:00Z 添加：确保问题和目的的样式一致 */
+.question-purpose {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 } 
