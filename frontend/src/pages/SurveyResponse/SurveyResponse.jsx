@@ -10,7 +10,7 @@ import {
 } from '../../services/surveyService';
 
 // 导入SVG图标
-import logo from '../../assets/icons/curio_logo.svg'; // 假设有这个图标，如果没有请创建
+import logo from '../../assets/icons/Curio_logo.svg'; // 假设有这个图标，如果没有请创建
 
 const SurveyResponse = () => {
   const navigate = useNavigate();

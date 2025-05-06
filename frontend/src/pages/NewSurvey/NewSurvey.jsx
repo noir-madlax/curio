@@ -5,6 +5,7 @@ import MainLayout from '../../components/layout/MainLayout/MainLayout';
 import Button from '../../components/common/Button/Button';
 import Badge from '../../components/common/Badge/Badge';
 import { FullPageLoading, LoadingOverlay, LoadingIndicator } from '../../components/common/Loading';
+import QuestionOptions from '../../components/common/QuestionOptions/QuestionOptions';
 import './NewSurvey.css';
 import { 
   createSurvey, 
@@ -1438,73 +1439,14 @@ const NewSurvey = ({ viewMode = false }) => {
                           <div className="question-text">
                             {question.text}
                             
-                            <div className="question-meta">
-                              {/* 2024-10-05T15:15:00Z 修改：确保始终显示问题类型 */}
-                              {question.type && (
-                                <span className="question-type-badge">
-                                  {QUESTION_TYPE_NAMES[question.type] || question.type}
-                                </span>
-                              )}
-                            </div>
                           </div>
                           
-                          {/* 单选/多选题选项预览 */}
-                          {(question.type === QUESTION_TYPES.SINGLE_CHOICE || 
-                            question.type === QUESTION_TYPES.MULTIPLE_CHOICE) && (
-                            <div className="question-options-preview">
-                              {/* 2024-10-06T16:00:00Z 修改：修正选项显示逻辑 */}
-                              {question.options && question.options.length > 0 ? (
-                                <div className="options-list-preview">
-                                  {question.options.map((option, index) => (
-                                    <div key={option.id || index} className="option-preview-item">
-                                      <span className="option-number">{index + 1}.</span>
-                                      {option.text}
-                                    </div>
-                                  ))}
-                                </div>
-                              ) : (
-                                <div className="no-options-message">No options available</div>
-                              )}
-                            </div>
-                          )}
-                          
-                          {/* NPS题选项预览 */}
-                          {question.type === QUESTION_TYPES.NPS && (
-                            <div className="nps-preview">
-                              <div className="nps-scale-preview">
-                                {Array.from({length: 11}, (_, i) => (
-                                  <div key={i} className="nps-number">{i}</div>
-                                ))}
-                              </div>
-                              {/* 2024-10-06T16:40:00Z 修复：确保显示NPS自定义标签 */}
-                              {question.options && question.options.length >= 2 && (
-                                <div className="nps-labels-preview">
-                                  <div className="nps-label-item">
-                                    <span>0:</span> {question.options.find(o => o.order === 1)?.text || 'Not likely'}
-                                  </div>
-                                  <div className="nps-label-item">
-                                    <span>10:</span> {question.options.find(o => o.order === 2)?.text || 'Extremely likely'}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                          
-                          {/* 布尔题选项预览 */}
-                          {question.type === QUESTION_TYPES.BOOLEAN && (
-                            <div className="boolean-preview">
-                              <div className="boolean-options-preview">
-                                {/* 2024-10-06T16:40:00Z 修复：确保显示布尔题自定义标签 */}
-                                {question.options && question.options.length >= 2 ? (
-                                  <span>
-                                    {question.options.find(o => o.order === 1)?.text || 'Yes'} / {question.options.find(o => o.order === 2)?.text || 'No'}
-                                  </span>
-                                ) : (
-                                  <span>Yes / No</span>
-                                )}
-                              </div>
-                            </div>
-                          )}
+                          {/* 使用QuestionOptions组件统一显示各类型问题选项 */}
+                          {/* 2024-05-09: 使用通用组件显示问题选项 */}
+                          <QuestionOptions 
+                            question={question} 
+                            mode="edit" 
+                          />
                         </div>
                       </div>
                     ))}
@@ -1518,7 +1460,10 @@ const NewSurvey = ({ viewMode = false }) => {
             {activeTab === 'details' && (
               <div className="survey-details-form">
                 <div className="form-group">
-                  <label htmlFor="surveyTitle">Survey Title</label>
+                  <label htmlFor="surveyTitle">
+                    Survey Title
+                    <Badge type="required">Required</Badge>
+                  </label>
                   <div className="label-with-badge">
                     <input 
                       type="text" 
@@ -1530,12 +1475,14 @@ const NewSurvey = ({ viewMode = false }) => {
                       className="filled-input"
                       style={{ fontWeight: '500', color: '#333' }}
                     />
-                    <Badge type="required">Required</Badge>
                   </div>
                 </div>
                 
                 <div className="form-group">
-                  <label htmlFor="surveyDescription">Welcome Message</label>
+                  <label htmlFor="surveyDescription">
+                    Welcome Message
+                    <Badge type="required">Required</Badge>
+                  </label>
                   <div className="label-with-badge">
                     <textarea 
                       id="surveyDescription" 
@@ -1547,7 +1494,6 @@ const NewSurvey = ({ viewMode = false }) => {
                       className="empty-input"
                       style={{ fontStyle: 'italic', color: surveyDescription ? '#333' : '#999' }}
                     />
-                    <Badge type="required">Required</Badge>
                   </div>
                 </div>
                 
@@ -1758,66 +1704,14 @@ const NewSurvey = ({ viewMode = false }) => {
                                       <div className="question-text">
                                         {question.text}
                                         
-                                        {/* 2024-05-09: 移除这里的问题类型显示，已移到header中 */}
                                       </div>
                                       
-                                      {/* 单选/多选题选项预览 */}
-                                      {(question.type === QUESTION_TYPES.SINGLE_CHOICE || 
-                                        question.type === QUESTION_TYPES.MULTIPLE_CHOICE) && (
-                                        <div className="question-options-preview">
-                                          {/* 2024-10-06T16:00:00Z 修改：修正选项显示逻辑 */}
-                                          {question.options && question.options.length > 0 ? (
-                                            <div className="options-list-preview">
-                                              {question.options.map((option, index) => (
-                                                <div key={option.id || index} className="option-preview-item">
-                                                  <span className="option-number">{index + 1}.</span>
-                                                  {option.text}
-                                                </div>
-                                              ))}
-                                            </div>
-                                          ) : (
-                                            <div className="no-options-message">No options available</div>
-                                          )}
-                                        </div>
-                                      )}
-                                      
-                                      {/* NPS题选项预览 */}
-                                      {question.type === QUESTION_TYPES.NPS && (
-                                        <div className="nps-preview">
-                                          <div className="nps-scale-preview">
-                                            {Array.from({length: 11}, (_, i) => (
-                                              <div key={i} className="nps-number">{i}</div>
-                                            ))}
-                                          </div>
-                                          {/* 2024-10-06T16:40:00Z 修复：确保显示NPS自定义标签 */}
-                                          {question.options && question.options.length >= 2 && (
-                                            <div className="nps-labels-preview">
-                                              <div className="nps-label-item">
-                                                <span>0:</span> {question.options.find(o => o.order === 1)?.text || 'Not likely'}
-                                              </div>
-                                              <div className="nps-label-item">
-                                                <span>10:</span> {question.options.find(o => o.order === 2)?.text || 'Extremely likely'}
-                                              </div>
-                                            </div>
-                                          )}
-                                        </div>
-                                      )}
-                                      
-                                      {/* 布尔题选项预览 */}
-                                      {question.type === QUESTION_TYPES.BOOLEAN && (
-                                        <div className="boolean-preview">
-                                          <div className="boolean-options-preview">
-                                            {/* 2024-10-06T16:40:00Z 修复：确保显示布尔题自定义标签 */}
-                                            {question.options && question.options.length >= 2 ? (
-                                              <span>
-                                                {question.options.find(o => o.order === 1)?.text || 'Yes'} / {question.options.find(o => o.order === 2)?.text || 'No'}
-                                              </span>
-                                            ) : (
-                                              <span>Yes / No</span>
-                                            )}
-                                          </div>
-                                        </div>
-                                      )}
+                                      {/* 使用QuestionOptions组件统一显示各类型问题选项 */}
+                                      {/* 2024-05-09: 使用通用组件显示问题选项 */}
+                                      <QuestionOptions 
+                                        question={question} 
+                                        mode="edit" 
+                                      />
                                     </div>
                                   </div>
                                 )}

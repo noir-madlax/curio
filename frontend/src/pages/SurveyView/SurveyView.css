@@ -136,10 +136,7 @@
 }
 
 .question-header {
-  margin-bottom: 16px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  margin-bottom: 0;
 }
 
 .question-header-left {
@@ -574,7 +571,7 @@
   align-items: center;
   width: 100%;
   position: relative;
-  margin-bottom: 8px;
+  margin-bottom: 0;
 }
 
 .question-number {
@@ -601,7 +598,7 @@
 }
 
 .question-options-display {
-  margin-top: 16px;
+  margin-top: 8px;
   width: 100%;
 }
 
@@ -721,4 +718,9 @@
   color: white;
   font-size: 12px;
   line-height: 1;
+}
+
+.question-content {
+  padding-top: 0;
+  margin-top: 8px;
 }
