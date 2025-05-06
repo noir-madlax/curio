@@ -349,4 +349,9 @@
 
 .error-container p {
   margin-bottom: 16px;
+}
+
+/* 2023-11-01: 添加margin工具类 */
+.m-l-15 {
+  margin-left: 15px;
 } 

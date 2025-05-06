@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import MainLayout from '../../components/layout/MainLayout/MainLayout';
+import SimpleLayout from '../../components/layout/SimpleLayout/SimpleLayout';
 import Button from '../../components/common/Button/Button';
 import Badge from '../../components/common/Badge/Badge';
 import { FullPageLoading } from '../../components/common/Loading';
@@ -50,6 +51,9 @@ const PublishIcon = ({ color = "#252326" }) => (
 /**
  * 统一的问卷视图组件
  * @param {string} mode - 组件模式：'preview'(默认)、'respond'、'view'
+ * 2023-10-30: 修复问题展示不一致和respond模式布局问题
+ * 2023-10-31: 修复问题样式和loading问题
+ * 2023-11-01: 统一使用此组件处理所有view和preview场景
  */
 const SurveyView = () => {
   const navigate = useNavigate();
@@ -61,9 +65,23 @@ const SurveyView = () => {
   let mode = 'preview'; // 默认模式
   if (pathParts.includes('respond')) {
     mode = 'respond';
-  } else if (pathParts.includes('view')) {
-    mode = 'view';
-  }
+  } 
+  
+  // 获取URL中的查询参数
+  const queryParams = new URLSearchParams(location.search);
+  // 2023-11-01: 修复查询参数t的处理，添加更多调试日志
+  const responseIdFromQuery = queryParams.get('t'); // 从查询参数获取t参数作为responseId
+  
+  // 调试输出路由信息
+  console.log('=== URL和路由参数信息 ===', {
+    pathname: location.pathname,
+    search: location.search,
+    mode,
+    id,
+    responseId,
+    responseIdFromQuery,
+    fullUrl: window.location.href
+  });
   
   // 状态定义
   const [surveyTitle, setSurveyTitle] = useState('');
@@ -75,27 +93,56 @@ const SurveyView = () => {
   
   // Respond模式相关状态
   const [answers, setAnswers] = useState({});
-  const [currentResponseId, setCurrentResponseId] = useState(responseId || null);
+  // 2023-11-01: 优先使用查询参数中的t作为响应ID
+  const [currentResponseId, setCurrentResponseId] = useState(responseIdFromQuery || responseId || null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false); // 追踪初始加载是否完成
+  const [isCreatingResponse, setIsCreatingResponse] = useState(false); // 追踪是否正在创建响应ID
   
   // View模式相关状态
   const [responseData, setResponseData] = useState(null);
   
+  console.log(`当前模式: ${mode}, 问卷ID: ${id}, 响应ID: ${currentResponseId}`, {
+    responseIdFromQuery,
+    responseIdFromURL: responseId,
+    finalResponseId: currentResponseId
+  });
+  
   // 初始化数据加载
   useEffect(() => {
+    console.log('=== useEffect 开始执行 ===', {
+      id,
+      mode,
+      responseIdFromParams: responseId,
+      responseIdFromQuery,
+      currentResponseId,
+      isCreatingResponse
+    });
+    
     if (id) {
       const fetchSurveyData = async () => {
         setIsLoading(true);
         try {
+          console.log("开始加载问卷数据...", {
+            surveyId: id,
+            mode,
+            responseIdFromParam: responseId,
+            responseIdFromQuery,
+            currentResponseId,
+            fullUrl: window.location.href
+          });
+          
           // 获取问卷基础信息
           const surveyData = await getSurveyById(id);
+          console.log("获取到问卷基础信息:", surveyData);
           setSurveyTitle(surveyData.title);
           setSurveyDescription(surveyData.description || '');
           setSurveyStatus(surveyData.status.toLowerCase());
           
           // 获取问题列表
           const questionsData = await getQuestionsBySurveyId(id);
+          console.log(`获取到 ${questionsData.length} 个问题`);
           
           // 保存完整的问题信息，加载问题选项
           const questionsWithOptions = [];
@@ -119,6 +166,7 @@ const SurveyView = () => {
                 const options = await getQuestionOptions(q.id);
                 if (options && options.length > 0) {
                   questionWithOptions.options = options;
+                  console.log(`问题 ${q.id} 加载了 ${options.length} 个选项`);
                 }
               } catch (err) {
                 console.error(`Error loading options for question ${q.id}:`, err);
@@ -131,48 +179,74 @@ const SurveyView = () => {
           setQuestions(questionsWithOptions);
           
           // 初始化答案对象
-          if (mode === 'respond') {
+          if (mode === 'respond' || mode === 'preview') {
             const initialAnswers = {};
             questionsWithOptions.forEach(q => {
               initialAnswers[q.id] = 
                 q.type === QUESTION_TYPES.MULTIPLE_CHOICE ? [] : null;
             });
             setAnswers(initialAnswers);
-            
-            // 如果没有responseId，创建新的响应
-            if (!currentResponseId) {
+          }
+          
+          // 处理响应ID逻辑
+          // 2023-11-01: 修复响应ID处理逻辑
+          if (mode === 'respond') {
+            // 首先检查是否已有响应ID（从URL中获取）
+            if (currentResponseId) {
+              console.log(`使用现有响应ID: ${currentResponseId}`, {
+                source: responseIdFromQuery ? '查询参数t' : (responseId ? 'URL路径参数' : '状态值')
+              });
+              // 如果已有响应ID，则不需要创建新的
+            } else if (!isCreatingResponse) {
+              console.log("需要创建问卷响应ID...");
+              setIsCreatingResponse(true);
               try {
+                console.log(`准备创建问卷响应，问卷ID: ${id}`);
                 const newResponse = await createSurveyResponse(id);
-                setCurrentResponseId(newResponse.id);
+                console.log("创建问卷响应成功:", newResponse);
+                if (newResponse && newResponse.id) {
+                  setCurrentResponseId(newResponse.id);
+                  console.log(`已设置新响应ID: ${newResponse.id}`);
+                } else {
+                  console.error('创建的响应没有有效的ID:', newResponse);
+                  setError('无法创建有效的问卷响应。请刷新页面重试。');
+                }
               } catch (err) {
                 console.error('Error creating survey response:', err);
                 setError('无法创建问卷响应。请刷新页面重试。');
+              } finally {
+                setIsCreatingResponse(false);
               }
             }
           }
           
-          // View模式下加载响应数据
-          if (mode === 'view' && responseId) {
-            try {
-              const responseData = await getSurveyResponseById(responseId);
-              setResponseData(responseData);
-            } catch (err) {
-              console.error('Error loading response data:', err);
-              setError('无法加载响应数据。');
-            }
-          }
-          
+          setInitialLoadComplete(true);
+          console.log("问卷数据加载完成", {
+            mode,
+            questions: questionsWithOptions.length,
+            currentResponseId,
+            initialLoadComplete: true
+          });
         } catch (err) {
           console.error('Error fetching survey data:', err);
           setError(err.message || 'Unable to load survey data');
         } finally {
           setIsLoading(false);
+          console.log("数据加载状态更新: isLoading = false");
         }
       };
       
       fetchSurveyData();
+    } else {
+      console.error("错误: 缺少问卷ID参数");
+      setError("无法加载问卷，缺少ID参数");
+      setIsLoading(false);
     }
-  }, [id, mode, responseId, currentResponseId]);
+    
+    return () => {
+      console.log("=== useEffect 清理函数执行 ===");
+    };
+  }, [id, mode]); // 2023-11-01: 移除不必要的依赖项，避免无限循环
 
   // 返回问卷列表
   const handleBack = () => {
@@ -237,7 +311,7 @@ const SurveyView = () => {
     
     if (unansweredRequired.length > 0) {
       const firstUnanswered = unansweredRequired[0];
-      alert(`请回答必填问题: "${firstUnanswered.text}"`);
+      alert(`Please answer the required question: "${firstUnanswered.text}"`);
       
       // 自动滚动到第一个未回答的必填问题
       const element = document.getElementById(`question-${firstUnanswered.id}`);
@@ -251,14 +325,31 @@ const SurveyView = () => {
     setIsSubmitting(true);
     
     try {
+      console.log("准备提交问卷回答", { 
+        surveyId: id,
+        responseId: currentResponseId,
+        answers
+      });
+      
       // 准备提交数据
-      const responseData = Object.keys(answers).map(questionId => ({
-        questionId,
-        answer: answers[questionId]
-      }));
+      const responseData = {
+        respondentIdentifier: `anonymous_${Date.now()}`,
+        responses: Object.keys(answers).map(questionId => ({
+          questionId,
+          text: Array.isArray(answers[questionId]) 
+            ? answers[questionId].join(',')  // 多选题
+            : answers[questionId] !== null && answers[questionId] !== undefined 
+              ? answers[questionId].toString() // 将所有回答转为字符串
+              : ''
+        }))
+      };
+      
+      console.log("提交数据:", responseData);
       
       // 调用提交API
-      await submitSurveyResponse(currentResponseId, responseData);
+      const result = await submitSurveyResponse(id, responseData);
+      
+      console.log("提交结果:", result);
       
       setSubmitSuccess(true);
       // 显示成功消息，可以在这里添加更多用户反馈
@@ -268,237 +359,139 @@ const SurveyView = () => {
       
     } catch (err) {
       console.error('Error submitting survey responses:', err);
-      setError('提交回答失败，请重试。');
+      setError('Failed to submit responses. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
   
-  // 渲染问题组件
+  // 渲染单个问题
   const renderQuestion = (question) => {
-    const questionId = `question-${question.id}`;
-    
+    const isViewMode = mode === 'preview'; // preview模式下只查看，不交互
+    const isInteractive = mode === 'respond'; // 只有在respond模式下才能交互
+
     return (
-      <div key={question.id} id={questionId} className="question-item" style={{
-        padding: '16px 20px',
-        borderRadius: '8px',
-        border: '1px solid #E5E5E5',
-        marginBottom: '16px',
-        background: '#FFFFFF'
-      }}>
-        <div className="question-header" style={{
-          marginBottom: '12px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <div className="question-number" style={{
-              fontWeight: '500',
-              color: '#333',
-              marginRight: '8px'
-            }}>
-              Question {question.number}
-            </div>
+      <div 
+        id={`question-${question.id}`} 
+        className="question-item"
+        key={question.id}
+      >
+        <div className="question-header">
+          <div className="question-info">
+            <span className="question-number">{question.number}.</span>
+            <span className="question-text">{question.text}</span>
             {question.required && (
-              <div className="required-badge" style={{
-                backgroundColor: '#E8F5E9',
-                color: '#43A047',
-                fontSize: '12px',
-                padding: '2px 8px',
-                borderRadius: '4px',
-                fontWeight: '500'
-              }}>
-                Required
-              </div>
+              <span className="question-required-badge">Required</span>
             )}
           </div>
-          <div className="question-type" style={{
-            fontSize: '14px',
-            color: '#6B7280',
-            backgroundColor: '#F3F4F6',
-            padding: '4px 10px',
-            borderRadius: '4px'
-          }}>
-            {QUESTION_TYPE_NAMES[question.type] || question.type}
+          <div className="question-type">
+            {QUESTION_TYPE_NAMES[question.type] || 'Unknown Type'}
           </div>
         </div>
+        
         <div className="question-content">
-          <div className="question-text" style={{
-            fontSize: '16px',
-            lineHeight: '1.5',
-            marginBottom: '12px'
-          }}>{question.text}</div>
-          
-          {/* 渲染问题选项和输入控件 */}
-          {renderQuestionInput(question)}
+          {renderQuestionInput(question, isViewMode, isInteractive)}
         </div>
       </div>
     );
   };
   
   // 渲染问题输入控件
-  const renderQuestionInput = (question) => {
+  const renderQuestionInput = (question, isViewMode, isInteractive) => {
+    // 2023-11-01: 简化问题输入渲染逻辑
     const currentAnswer = answers[question.id];
-    const isViewMode = mode === 'preview' || mode === 'view';
     
     switch (question.type) {
       case QUESTION_TYPES.SINGLE_CHOICE:
         return (
-          <div className="question-options" style={{ marginTop: '10px' }}>
-            {question.options && question.options.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {question.options.map((option, idx) => (
-                  <label key={option.id || idx} style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '8px 12px',
-                    margin: '4px 0',
-                    backgroundColor: '#F9FAFB',
-                    borderRadius: '4px',
-                    border: '1px solid #E5E7EB',
-                    cursor: isViewMode ? 'default' : 'pointer'
-                  }}>
-                    <input 
-                      type="radio"
-                      name={`question-${question.id}`}
-                      value={option.id}
-                      checked={currentAnswer === option.id}
-                      onChange={() => handleAnswerChange(question.id, option.id)}
-                      disabled={isViewMode}
-                      style={{ marginRight: '10px' }}
-                    />
-                    {option.text}
-                  </label>
-                ))}
+          <div className="single-choice-container">
+            {question.options?.map((option) => (
+              <div 
+                key={option.id}
+                className={`single-choice-option ${currentAnswer === option.id ? 'selected' : ''} ${!isInteractive ? 'disabled' : ''}`}
+                onClick={() => {
+                  if (isInteractive) handleAnswerChange(question.id, option.id);
+                }}
+              >
+                <div className="option-radio">
+                  <div className={`radio-outer ${currentAnswer === option.id ? 'selected' : ''}`}>
+                    {currentAnswer === option.id && <div className="radio-inner"></div>}
+                  </div>
+                </div>
+                <span className="option-text">{option.text}</span>
               </div>
-            ) : (
-              <p style={{ color: '#9CA3AF', fontStyle: 'italic' }}>No options available</p>
-            )}
+            ))}
           </div>
         );
         
       case QUESTION_TYPES.MULTIPLE_CHOICE:
+        const selectedOptions = Array.isArray(currentAnswer) ? currentAnswer : [];
+        
         return (
-          <div className="question-options" style={{ marginTop: '10px' }}>
-            {question.options && question.options.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {question.options.map((option, idx) => (
-                  <label key={option.id || idx} style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '8px 12px',
-                    margin: '4px 0',
-                    backgroundColor: '#F9FAFB',
-                    borderRadius: '4px',
-                    border: '1px solid #E5E7EB',
-                    cursor: isViewMode ? 'default' : 'pointer'
-                  }}>
-                    <input 
-                      type="checkbox"
-                      value={option.id}
-                      checked={Array.isArray(currentAnswer) && currentAnswer.includes(option.id)}
-                      onChange={(e) => {
-                        if (isViewMode) return;
-                        const optionId = option.id;
-                        const newValue = [...(currentAnswer || [])];
-                        if (e.target.checked) {
-                          newValue.push(optionId);
-                        } else {
-                          const index = newValue.indexOf(optionId);
-                          if (index !== -1) newValue.splice(index, 1);
-                        }
-                        handleAnswerChange(question.id, newValue);
-                      }}
-                      disabled={isViewMode}
-                      style={{ marginRight: '10px' }}
-                    />
-                    {option.text}
-                  </label>
-                ))}
+          <div className="multiple-choice-container">
+            {question.options?.map((option) => (
+              <div 
+                key={option.id}
+                className={`multiple-choice-option ${selectedOptions.includes(option.id) ? 'selected' : ''} ${!isInteractive ? 'disabled' : ''}`}
+                onClick={() => {
+                  if (isInteractive) {
+                    const newSelection = selectedOptions.includes(option.id)
+                      ? selectedOptions.filter(id => id !== option.id)
+                      : [...selectedOptions, option.id];
+                    handleAnswerChange(question.id, newSelection);
+                  }
+                }}
+              >
+                <div className="option-checkbox">
+                  <div className={`checkbox-outer ${selectedOptions.includes(option.id) ? 'selected' : ''}`}>
+                    {selectedOptions.includes(option.id) && <div className="checkbox-inner">✓</div>}
+                  </div>
+                </div>
+                <span className="option-text">{option.text}</span>
               </div>
-            ) : (
-              <p style={{ color: '#9CA3AF', fontStyle: 'italic' }}>No options available</p>
-            )}
+            ))}
           </div>
         );
         
       case QUESTION_TYPES.NPS:
         return (
-          <div className="nps-preview" style={{ marginTop: '10px' }}>
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between',
-              maxWidth: '500px'
-            }}>
-              {Array.from({ length: 11 }, (_, i) => (
+          <div className="nps-container">
+            <div className="nps-scale">
+              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
                 <div 
-                  key={i} 
-                  style={{
-                    width: '36px',
-                    height: '36px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    border: '1px solid #E5E7EB',
-                    borderRadius: '4px',
-                    fontSize: '14px',
-                    backgroundColor: currentAnswer === i ? '#4F46E5' : '#F9FAFB',
-                    color: currentAnswer === i ? 'white' : 'black',
-                    cursor: isViewMode ? 'default' : 'pointer'
-                  }}
+                  key={value}
+                  className={`nps-option ${currentAnswer === value ? 'selected' : ''} ${!isInteractive ? 'disabled' : ''}`}
                   onClick={() => {
-                    if (!isViewMode) handleAnswerChange(question.id, i);
+                    if (isInteractive) handleAnswerChange(question.id, value);
                   }}
                 >
-                  {i}
+                  {value}
                 </div>
               ))}
             </div>
-            {question.options && question.options.length >= 2 && (
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between',
-                maxWidth: '500px',
-                marginTop: '4px'
-              }}>
-                <span style={{ fontSize: '12px', color: '#6B7280' }}>{question.options[0]?.text || 'Not likely'}</span>
-                <span style={{ fontSize: '12px', color: '#6B7280' }}>{question.options[1]?.text || 'Very likely'}</span>
-              </div>
-            )}
+            <div className="nps-labels">
+              <span>Not likely at all</span>
+              <span>Extremely likely</span>
+            </div>
           </div>
         );
         
       case QUESTION_TYPES.BOOLEAN:
         return (
-          <div className="boolean-preview" style={{ marginTop: '10px' }}>
-            <div style={{ display: 'flex', gap: '12px' }}>
+          <div className="boolean-container">
+            <div className="boolean-options">
               <div 
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: currentAnswer === true ? '#4F46E5' : '#F9FAFB',
-                  color: currentAnswer === true ? 'white' : 'black',
-                  borderRadius: '4px',
-                  border: '1px solid #E5E7EB',
-                  cursor: isViewMode ? 'default' : 'pointer'
-                }}
+                className={`boolean-option ${currentAnswer === true ? 'selected' : ''} ${!isInteractive ? 'disabled' : ''}`}
                 onClick={() => {
-                  if (!isViewMode) handleAnswerChange(question.id, true);
+                  if (isInteractive) handleAnswerChange(question.id, true);
                 }}
               >
                 {question.options && question.options.length > 0 ? question.options[0]?.text : 'Yes'}
               </div>
               <div 
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: currentAnswer === false ? '#4F46E5' : '#F9FAFB',
-                  color: currentAnswer === false ? 'white' : 'black',
-                  borderRadius: '4px',
-                  border: '1px solid #E5E7EB',
-                  cursor: isViewMode ? 'default' : 'pointer'
-                }}
+                className={`boolean-option ${currentAnswer === false ? 'selected' : ''} ${!isInteractive ? 'disabled' : ''}`}
                 onClick={() => {
-                  if (!isViewMode) handleAnswerChange(question.id, false);
+                  if (isInteractive) handleAnswerChange(question.id, false);
                 }}
               >
                 {question.options && question.options.length > 1 ? question.options[1]?.text : 'No'}
@@ -510,35 +503,14 @@ const SurveyView = () => {
       case QUESTION_TYPES.TEXT:
       default:
         return (
-          <div className="text-preview" style={{ marginTop: '10px' }}>
-            {isViewMode ? (
-              <div style={{
-                minHeight: '40px',
-                backgroundColor: '#F9FAFB',
-                borderRadius: '4px',
-                border: '1px solid #E5E7EB',
-                padding: '8px 12px',
-                color: '#9CA3AF',
-                fontStyle: 'italic'
-              }}>
-                {mode === 'view' && responseData?.answers?.[question.id] ? 
-                  responseData.answers[question.id] : 'Text answer field'}
-              </div>
-            ) : (
-              <textarea
-                value={currentAnswer || ''}
-                onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                style={{
-                  width: '100%',
-                  minHeight: '80px',
-                  padding: '8px 12px',
-                  borderRadius: '4px',
-                  border: '1px solid #E5E7EB',
-                  resize: 'vertical'
-                }}
-                placeholder="Enter your answer here..."
-              />
-            )}
+          <div className="text-container">
+            <textarea
+              value={currentAnswer || ''}
+              onChange={(e) => isInteractive && handleAnswerChange(question.id, e.target.value)}
+              className="text-input"
+              placeholder="Enter your answer here..."
+              disabled={!isInteractive}
+            />
           </div>
         );
     }
@@ -546,33 +518,37 @@ const SurveyView = () => {
   
   // 渲染页面标题和操作按钮
   const renderHeader = () => {
+    // 2023-11-01: 现在只有preview和respond两种模式
     return (
-      <div className="survey-preview-header">
+      <div className="survey-header">
         <div className="header-title">
-          <h1>{surveyTitle}</h1>
-          {surveyStatus === 'published' && mode === 'preview' && (
+          <h1 className="survey-title">{surveyTitle}</h1>
+          {surveyStatus === 'published' && (
             <Badge status="Published" />
           )}
         </div>
         <div className="header-actions">
           {mode === 'preview' && (
             <>
-              <Button 
-                variant="secondary" 
-                icon={<img src={editIcon} alt="Edit" className="button-icon" />}
-                onClick={handleEdit}
-              >
-                Edit
-              </Button>
+              {/* 2023-11-01: 只在Draft状态显示Edit按钮 */}
+              {surveyStatus !== 'published' && (
+                <Button 
+                  variant="secondary" 
+                  icon={<img src={editIcon} alt="Edit" className="button-icon" />}
+                  onClick={handleEdit}
+                >
+                  Edit
+                </Button>
+              )}
               
               {surveyStatus === 'published' ? (
                 <Button 
                   variant="success" 
                   icon={<PublishIcon color="#FFFFFF" />}
-                  onClick={() => navigate(`/survey/${id}/respond`)}
+                  onClick={() => navigate(`/survey-published/${id}`)}
                   className="published-button"
                 >
-                  Respond to Survey
+                  Share Survey
                 </Button>
               ) : (
                 <Button 
@@ -598,59 +574,47 @@ const SurveyView = () => {
               {isSubmitting ? 'Submitting...' : 'Submit Responses'}
             </Button>
           )}
-          
-          {mode === 'view' && (
-            <Button 
-              variant="secondary" 
-              onClick={() => navigate(`/surveys`)}
-            >
-              Back to Surveys
-            </Button>
-          )}
         </div>
       </div>
     );
   };
   
+  // 根据模式选择使用哪种布局组件
+  const LayoutComponent = mode === 'respond' ? SimpleLayout : MainLayout;
+  
   // 渲染主体内容
   if (error) {
     return (
-      <MainLayout>
+      <LayoutComponent>
         <div className="error-container">
-          <h2>Error</h2>
-          <p>{error}</p>
+          <h2 className="error-title">Error</h2>
+          <p className="error-message">{error}</p>
           <Button variant="primary" onClick={handleBack}>
             Back to Surveys
           </Button>
         </div>
-      </MainLayout>
+      </LayoutComponent>
     );
   }
   
   if (isLoading) {
     return (
-      <MainLayout>
+      <LayoutComponent>
         <FullPageLoading message="Loading survey data..." />
-      </MainLayout>
+      </LayoutComponent>
     );
   }
   
   return (
-    <MainLayout>
+    <LayoutComponent>
       <div className="survey-view-container">
         {/* 标题和操作按钮 */}
         {renderHeader()}
         
         {/* 无问题时的警告 */}
         {questions.length === 0 && mode === 'preview' && surveyStatus !== 'published' && (
-          <div className="warning-container" style={{
-            backgroundColor: '#FFF8E1', 
-            padding: '16px', 
-            borderRadius: '8px', 
-            marginBottom: '20px',
-            border: '1px solid #FFE082'
-          }}>
-            <p style={{ color: '#FF8F00', margin: 0 }}>
+          <div className="warning-container">
+            <p className="warning-message">
               <strong>Note:</strong> You need to add at least one question to publish this survey. Please return to the edit page to add questions.
             </p>
           </div>
@@ -658,14 +622,8 @@ const SurveyView = () => {
         
         {/* 提交成功消息 */}
         {mode === 'respond' && submitSuccess && (
-          <div className="success-container" style={{
-            backgroundColor: '#E8F5E9', 
-            padding: '16px', 
-            borderRadius: '8px', 
-            marginBottom: '20px',
-            border: '1px solid #A5D6A7'
-          }}>
-            <p style={{ color: '#2E7D32', margin: 0 }}>
+          <div className="success-container">
+            <p className="success-message">
               <strong>Success!</strong> Your responses have been submitted. Redirecting...
             </p>
           </div>
@@ -676,29 +634,15 @@ const SurveyView = () => {
           {/* 问卷描述 */}
           <div className="survey-description-section">
             {surveyDescription && (
-              <div className="welcome-message" style={{
-                backgroundColor: '#F7F9FC',
-                padding: '20px 24px',
-                borderRadius: '8px',
-                marginBottom: '28px',
-                border: '1px solid #E5EEFF'
-              }}>
-                <p style={{
-                  fontSize: '16px',
-                  lineHeight: '1.6',
-                  color: '#4A5568',
-                  margin: 0,
-                  fontWeight: '400'
-                }}>
-                  {surveyDescription}
-                </p>
-              </div>
+              <p className="survey-description">
+                {surveyDescription}
+              </p>
             )}
           </div>
           
           {/* 问题列表 */}
           <div className="survey-questions-section">
-            <h2 className="section-title">Questions</h2>
+            <h2 className="questions-title">QUESTIONS</h2>
             <div className={`survey-questions ${questions.length === 0 ? 'is-empty' : ''}`}>
               {questions.length === 0 ? (
                 <div className="empty-questions-message">
@@ -708,7 +652,7 @@ const SurveyView = () => {
                     textAlign: 'center', 
                     margin: '30px 0'
                   }}>
-                    No questions added yet. {mode === 'preview' ? 'Add your first question below.' : 'This survey has no questions.'}
+                    No questions added yet. {mode === 'preview' ? 'Add your first question in the edit page.' : 'This survey has no questions.'}
                   </p>
                 </div>
               ) : (
@@ -720,7 +664,7 @@ const SurveyView = () => {
           </div>
         </div>
       </div>
-    </MainLayout>
+    </LayoutComponent>
   );
 };
 

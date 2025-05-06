@@ -47,7 +47,7 @@ const SurveyCard = ({ survey, onDelete }) => {
   
   const handleView = () => {
     // 2024-08-07T16:00:00Z 修改：导航到查看页面而非回答页面
-    navigate(`/surveys/view/${id}`);
+    navigate(`/surveys/preview/${id}`);
   };
   
   // 2024-07-25: 更新Insights按钮处理函数，导航到SurveyInsight页面

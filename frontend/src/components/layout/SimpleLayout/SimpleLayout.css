@@ -1,0 +1,27 @@
+.simple-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.simple-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.content-area {
+  flex: 1;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .simple-content {
+    padding: 16px;
+  }
+} 

@@ -232,6 +232,9 @@ const NewSurvey = ({ viewMode = false }) => {
   const [error, setError] = useState(null);
   const [surveyId, setSurveyId] = useState(id || null);
   const [surveyStatus, setSurveyStatus] = useState('draft');
+  // 2023-10-31: 添加缺失的状态变量，修复错误
+  const [isPublished, setIsPublished] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
   
   // 问题表单状态
   // Question form state
@@ -491,10 +494,19 @@ const NewSurvey = ({ viewMode = false }) => {
       };
       
       if (surveyId) {
+        // 2023-11-01: 确保更新问卷状态为已发布
+        await updateSurvey(surveyId, {
+          status: 'published'
+        });
+        
         // 生成问卷链接
         // Generate survey link
         await generateSurveyLink(surveyId);
         publishedSurveyId = surveyId;
+        
+        // 更新本地状态
+        setSurveyStatus('published');
+        setIsPublished(true);
       } else {
         const newSurvey = await createSurvey({
           title: surveyTitle,
@@ -980,11 +992,12 @@ const NewSurvey = ({ viewMode = false }) => {
   
   // 2024-08-07T15:45:00Z 新增：处理Published按钮点击
   // 2024-08-07T15:45:00Z Added: Handle Published button click
+  // 2023-10-31: 修改分享按钮的功能提示，使其更明确
+  // 2023-11-01: 修改为导航到published页面，而不是复制链接
   const handlePublishedClick = () => {
     if (surveyId) {
-      const url = window.location.origin + `/survey/${surveyId}/respond`;
-      navigator.clipboard.writeText(url);
-      alert("Survey link copied to clipboard!");
+      // 导航到问卷published页面
+      navigate(`/survey-published/${surveyId}`);
     }
   };
   
@@ -1324,7 +1337,7 @@ const NewSurvey = ({ viewMode = false }) => {
             <div className="survey-description-section">
               {surveyDescription && (
                 <>
-                  <span className="description-label">Description:</span>
+                  {/* 2023-10-31: 移除Description标签，直接显示问卷描述 */}
                   <p className="survey-description">{surveyDescription}</p>
                 </>
               )}
@@ -1358,10 +1371,11 @@ const NewSurvey = ({ viewMode = false }) => {
                             )}
                           </div>
                           
-                          <div className="question-status status-item">
+                          {/* 2023-10-31: 移除问题级别的Published状态显示 */}
+                          {/* <div className="question-status status-item">
                             <div className={`status-dot ${isPublished ? 'green' : 'grey'}`}></div>
                             <span className="status-text">{isPublished ? 'Published' : 'Draft'}</span>
-                          </div>
+                          </div> */}
                         </div>
                         
                         <div className="question-content">

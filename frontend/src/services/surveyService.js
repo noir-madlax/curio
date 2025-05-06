@@ -479,8 +479,44 @@ export const reorderQuestions = async (surveyId, newOrder) => {
 
 // 2024-09-24: 创建新的问卷响应记录
 export const createSurveyResponse = async (surveyId, respondentIdentifier = null) => {
-  console.log(`createSurveyResponse 被调用，Survey ID: ${surveyId}`);
+  console.log(`【createSurveyResponse】开始创建问卷响应，Survey ID: ${surveyId}`, {
+    surveyId: surveyId,
+    respondentIdentifier: respondentIdentifier,
+    timestamp: new Date().toISOString(),
+    caller: new Error().stack.split('\n')[2].trim() // 获取调用堆栈信息
+  });
+  
   try {
+    if (!surveyId) {
+      console.error('【createSurveyResponse】调用错误: 缺少surveyId参数');
+      throw new Error('Survey ID is required to create a response');
+    }
+    
+    // 验证surveyId是否有效
+    try {
+      console.log(`【createSurveyResponse】验证问卷ID: ${surveyId}`);
+      const { data: surveyExists, error: surveyError } = await supabase
+        .from('cu_survey')
+        .select('id')
+        .eq('id', surveyId)
+        .single();
+        
+      if (surveyError) {
+        console.error(`【createSurveyResponse】验证问卷ID时出错:`, surveyError);
+        throw new Error(`Failed to validate survey ID: ${surveyError.message}`);
+      }
+      
+      if (!surveyExists) {
+        console.error(`【createSurveyResponse】无效的问卷ID: ${surveyId}`);
+        throw new Error(`Survey with ID ${surveyId} does not exist`);
+      }
+      
+      console.log(`【createSurveyResponse】问卷ID验证通过: ${surveyId}`);
+    } catch (validationError) {
+      console.error(`【createSurveyResponse】问卷验证失败:`, validationError);
+      throw validationError;
+    }
+    
     // 准备要插入的数据
     const newResponseData = {
       survey_id: surveyId,
@@ -488,26 +524,41 @@ export const createSurveyResponse = async (surveyId, respondentIdentifier = null
       respondent_identifier: respondentIdentifier || `anonymous_${Date.now()}` // 如果没有提供标识符，创建一个匿名标识符
     };
 
+    console.log('【createSurveyResponse】准备插入数据:', newResponseData);
+    
     // 执行 Supabase 插入操作
+    console.log(`【createSurveyResponse】开始插入数据到数据库...`);
     const { data, error } = await supabase
       .from('cu_survey_responses')
       .insert([newResponseData])
-      .select(); // 获取插入后的完整行数据
+      .select();
 
+    // 处理错误
     if (error) {
-      console.error('Supabase error creating survey response:', error);
-      throw new Error(error.message || '创建问卷响应记录失败');
+      console.error('【createSurveyResponse】数据库插入错误:', error);
+      throw new Error(`Failed to create survey response: ${error.message}`);
     }
-
-    if (data && data.length > 0) {
-      return data[0]; // 返回创建的响应记录
-    } else {
-      throw new Error('无法获取创建的问卷响应数据');
+    
+    // 检查返回的数据
+    if (!data || data.length === 0) {
+      console.error('【createSurveyResponse】数据库返回空数据');
+      throw new Error('Failed to create survey response: No data returned');
     }
-
+    
+    const responseRecord = data[0];
+    console.log(`【createSurveyResponse】成功创建响应记录! ID: ${responseRecord.id}`);
+    
+    return {
+      id: responseRecord.id,
+      status: responseRecord.status,
+      survey_id: responseRecord.survey_id,
+      respondent_identifier: responseRecord.respondent_identifier,
+      created_at: responseRecord.created_at
+    };
+    
   } catch (error) {
-    console.error('Error in createSurveyResponse service:', error);
-    throw error;
+    console.error('【createSurveyResponse】处理过程中发生错误:', error);
+    throw error; // 将错误传递给调用者
   }
 };
 
@@ -563,6 +614,7 @@ export const getSurveyResponseConversations = async (responseId) => {
 // - getResponsesOverTime
 
 // 2024-08-15T19:00:00Z 新增：提交传统问卷回答（不使用聊天模式）
+// 2023-10-31T10:00:00Z 修改：修复问卷响应提交问题，添加日志输出
 export const submitSurveyResponse = async (surveyId, responseData) => {
   console.log(`submitSurveyResponse 被调用，Survey ID: ${surveyId}，数据:`, responseData);
   try {
@@ -589,16 +641,18 @@ export const submitSurveyResponse = async (surveyId, responseData) => {
     }
 
     const surveyResponseId = surveyResponse[0].id;
+    console.log(`成功创建响应记录, ID: ${surveyResponseId}`);
 
     // 2. 为每个问题答案创建记录
     const answerData = responseData.responses.map(response => ({
       survey_response_id: surveyResponseId,
       question_id: response.questionId,
-      answer_text: response.text,
+      answer_text: response.text || '',
       answer_type: 'text',
       is_initial_answer: true
     }));
 
+    console.log(`准备保存 ${answerData.length} 个问题答案`);
     const { error: answersError } = await supabase
       .from('cu_question_answers')
       .insert(answerData);
@@ -608,6 +662,7 @@ export const submitSurveyResponse = async (surveyId, responseData) => {
       throw new Error(answersError.message || 'Failed to save question answers');
     }
 
+    console.log(`问卷回答成功提交，响应ID: ${surveyResponseId}`);
     return {
       success: true,
       responseId: surveyResponseId,
