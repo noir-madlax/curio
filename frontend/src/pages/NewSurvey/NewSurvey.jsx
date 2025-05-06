@@ -225,6 +225,7 @@ const NewSurvey = ({ viewMode = false }) => {
   const [activeTab, setActiveTab] = useState('details');
   const [surveyTitle, setSurveyTitle] = useState('New Survey');
   const [surveyDescription, setSurveyDescription] = useState('');
+  const [surveyThanksMessage, setSurveyThanksMessage] = useState('');
   const [questions, setQuestions] = useState([]);
   const [showAddForm, setShowAddForm] = useState(questions.length === 0);
   const [isLoading, setIsLoading] = useState(false);
@@ -269,6 +270,7 @@ const NewSurvey = ({ viewMode = false }) => {
           setSurveyTitle(surveyData.title);
           setSurveyDescription(surveyData.description || '');
           setSurveyStatus(surveyData.status.toLowerCase());
+          setSurveyThanksMessage(surveyData.thanksMessage || ''); // 2024-05-09: 从问卷数据中加载感谢信息
           
           const questionsData = await getQuestionsBySurveyId(id);
           
@@ -446,14 +448,16 @@ const NewSurvey = ({ viewMode = false }) => {
       if (surveyId) {
         await updateSurvey(surveyId, {
           title: surveyTitle,
-          description: surveyDescription
+          description: surveyDescription,
+          thanksMessage: surveyThanksMessage
         });
         savedSurveyId = surveyId;
       } 
       else {
         const newSurvey = await createSurvey({
           title: surveyTitle,
-          description: surveyDescription
+          description: surveyDescription,
+          thanksMessage: surveyThanksMessage
         });
         savedSurveyId = newSurvey.id;
         setSurveyId(savedSurveyId);
@@ -489,14 +493,16 @@ const NewSurvey = ({ viewMode = false }) => {
         
         // Generate survey link
         await updateSurvey(id, {
-          surveyLink: surveyLink // 2024-08-06 Added: Save survey link
+          surveyLink: surveyLink, // 2024-08-06 Added: Save survey link
+          thanksMessage: surveyThanksMessage
         });
       };
       
       if (surveyId) {
         // 2023-11-01: 确保更新问卷状态为已发布
         await updateSurvey(surveyId, {
-          status: 'published'
+          status: 'published',
+          thanksMessage: surveyThanksMessage
         });
         
         // 生成问卷链接
@@ -511,7 +517,8 @@ const NewSurvey = ({ viewMode = false }) => {
         const newSurvey = await createSurvey({
           title: surveyTitle,
           description: surveyDescription,
-          status: 'published'
+          status: 'published',
+          thanksMessage: surveyThanksMessage
         });
         publishedSurveyId = newSurvey.id;
         
@@ -533,6 +540,14 @@ const NewSurvey = ({ viewMode = false }) => {
     if (!showAddForm) {
       setQuestionText('');
       setEditingQuestionId(null);
+
+      // 2024-05-09：添加表单显示后自动滚动到Add New Question处
+      setTimeout(() => {
+        const addFormElement = document.querySelector('.add-question-form');
+        if (addFormElement) {
+          addFormElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
     }
   };
   
@@ -552,6 +567,9 @@ const NewSurvey = ({ viewMode = false }) => {
     }
     
     try {
+      // 2024-05-09: 在发送请求前立即隐藏表单，改善用户体验
+      setShowAddForm(false);
+      
       // If we don't have a surveyId yet, create the survey first
       if (!surveyId) {
         setIsLoading(true);
@@ -856,10 +874,16 @@ const NewSurvey = ({ viewMode = false }) => {
   const handleEditQuestion = async (id) => {
     try {
       setIsLoading(true);
-    const questionToEdit = questions.find(q => q.id === id);
+      const questionToEdit = questions.find(q => q.id === id);
       
-    if (questionToEdit) {
-      setQuestionText(questionToEdit.text);
+      if (questionToEdit) {
+        // 2024-05-09: 先添加乐观更新，将问题标记为正在编辑
+        const updatedQuestions = questions.map(q => 
+          q.id === id ? { ...q, isEditing: true } : q
+        );
+        setQuestions(updatedQuestions);
+        
+        setQuestionText(questionToEdit.text);
         // Set the correct question type when editing
         setSelectedQuestionType(questionToEdit.type || QUESTION_TYPES.TEXT);
         
@@ -939,6 +963,14 @@ const NewSurvey = ({ viewMode = false }) => {
         
       setEditingQuestionId(id);
       setShowAddForm(true);
+
+      // 2024-05-09：编辑表单显示后自动滚动到Edit Question处
+      setTimeout(() => {
+        const editFormElement = document.querySelector('.add-question-form');
+        if (editFormElement) {
+          editFormElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
       }
     } catch (err) {
       console.error('Error preparing question for edit:', err);
@@ -1154,6 +1186,14 @@ const NewSurvey = ({ viewMode = false }) => {
         { id: `option-${Date.now()}-1`, text: 'Option 1' },
         { id: `option-${Date.now()}-2`, text: 'Option 2' }
       ]);
+      
+      // 2024-05-09: 当选择需要选项的类型时，自动滚动到选项区域
+      setTimeout(() => {
+        const optionsElement = document.querySelector('.options-container');
+        if (optionsElement) {
+          optionsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
     } 
     else if (newType === QUESTION_TYPES.NPS) {
       // 2024-10-05T15:45:00Z 新增：为 NPS 类型设置默认标签
@@ -1163,6 +1203,14 @@ const NewSurvey = ({ viewMode = false }) => {
       });
       // 清空选项，因为NPS不使用选项列表
       setQuestionOptions([]);
+      
+      // 2024-05-09: 当选择NPS类型时，自动滚动到NPS标签区域
+      setTimeout(() => {
+        const npsLabelsElement = document.querySelector('.nps-labels-container');
+        if (npsLabelsElement) {
+          npsLabelsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
     }
     else if (newType === QUESTION_TYPES.BOOLEAN) {
       // 2024-10-05T15:45:00Z 新增：为布尔类型设置默认标签
@@ -1172,6 +1220,14 @@ const NewSurvey = ({ viewMode = false }) => {
       });
       // 清空选项，因为布尔题不使用选项列表
       setQuestionOptions([]);
+      
+      // 2024-05-09: 当选择布尔类型时，自动滚动到布尔标签区域
+      setTimeout(() => {
+        const booleanLabelsElement = document.querySelector('.boolean-labels-container');
+        if (booleanLabelsElement) {
+          booleanLabelsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
     }
     // 如果切换到不需要选项的类型，清空选项列表
     // If switching to a type that doesn't need options, clear the options list
@@ -1321,7 +1377,7 @@ const NewSurvey = ({ viewMode = false }) => {
               className={`tab ${activeTab === 'details' ? 'active' : ''}`}
               onClick={() => handleTabClick('details')}
             >
-              Survey Details
+              Basic Information
             </div>
             <div 
               className={`tab ${activeTab === 'questions' ? 'active' : ''}`}
@@ -1463,29 +1519,49 @@ const NewSurvey = ({ viewMode = false }) => {
               <div className="survey-details-form">
                 <div className="form-group">
                   <label htmlFor="surveyTitle">Survey Title</label>
-                  <input 
-                    type="text" 
-                    id="surveyTitle" 
-                    value={surveyTitle}
-                    onChange={(e) => setSurveyTitle(e.target.value)}
-                    placeholder="Enter survey title"
-                    disabled={isLoading}
-                    className="filled-input"
-                    style={{ fontWeight: '500', color: '#333' }}
-                  />
+                  <div className="label-with-badge">
+                    <input 
+                      type="text" 
+                      id="surveyTitle" 
+                      value={surveyTitle}
+                      onChange={(e) => setSurveyTitle(e.target.value)}
+                      placeholder="Enter survey title"
+                      disabled={isLoading}
+                      className="filled-input"
+                      style={{ fontWeight: '500', color: '#333' }}
+                    />
+                    <Badge type="required">Required</Badge>
+                  </div>
                 </div>
                 
                 <div className="form-group">
                   <label htmlFor="surveyDescription">Welcome Message</label>
+                  <div className="label-with-badge">
+                    <textarea 
+                      id="surveyDescription" 
+                      value={surveyDescription}
+                      onChange={(e) => setSurveyDescription(e.target.value)}
+                      placeholder="Welcome participants and describe what this survey is about"
+                      rows={2}
+                      disabled={isLoading}
+                      className="empty-input"
+                      style={{ fontStyle: 'italic', color: surveyDescription ? '#333' : '#999' }}
+                    />
+                    <Badge type="required">Required</Badge>
+                  </div>
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="surveyThanksMessage">Thanks Message</label>
                   <textarea 
-                    id="surveyDescription" 
-                    value={surveyDescription}
-                    onChange={(e) => setSurveyDescription(e.target.value)}
-                    placeholder="Welcome participants and describe what this survey is about"
+                    id="surveyThanksMessage" 
+                    value={surveyThanksMessage || ''}
+                    onChange={(e) => setSurveyThanksMessage(e.target.value)}
+                    placeholder="Thank you message to show after survey submission"
                     rows={2}
                     disabled={isLoading}
                     className="empty-input"
-                    style={{ fontStyle: 'italic', color: surveyDescription ? '#333' : '#999' }}
+                    style={{ fontStyle: 'italic', color: surveyThanksMessage ? '#333' : '#999' }}
                   />
                 </div>
 
@@ -1517,7 +1593,7 @@ const NewSurvey = ({ viewMode = false }) => {
                     </div>
                     {showAddForm ? (
                   <div className="add-question-form">
-                        <h2>Add New Question</h2>
+                        <h2>Add New Question {questions.length + 1}</h2>
                     <div className="form-group">
                       <label htmlFor="questionText">Question Text</label>
                       <textarea 
@@ -1642,10 +1718,19 @@ const NewSurvey = ({ viewMode = false }) => {
                                       >
                                         <img src={dragIcon} alt="Drag" />
                                         <span className="question-number">Question {question.number}</span>
-                                        {/* 2024-10-06T16:30:00Z 修改：修改Required标记的样式与颜色 */}
-                                        {question.required && (
-                                          <span className="question-required-badge-inline question-required-badge-green">Required</span>
+                                        
+                                        {/* 2024-05-09: 将问题类型badge移到这里, Required badge之前显示 */}
+                                        {question.type && (
+                                          <span className="question-type-badge">
+                                            {QUESTION_TYPE_NAMES[question.type] || question.type}
+                                          </span>
                                         )}
+                                        
+                                        {/* 2024-05-09: 使用通用Badge组件替换自定义样式 */}
+                                        {question.required && (
+                                          <Badge type="required">Required</Badge>
+                                        )}
+                                        
                                         {question.isSubmitting && (
                                           <span className="submitting-indicator">Saving...</span>
                                         )}
@@ -1673,14 +1758,7 @@ const NewSurvey = ({ viewMode = false }) => {
                                       <div className="question-text">
                                         {question.text}
                                         
-                                        <div className="question-meta">
-                                          {/* 2024-10-05T15:15:00Z 修改：确保始终显示问题类型 */}
-                                          {question.type && (
-                                            <span className="question-type-badge">
-                                              {QUESTION_TYPE_NAMES[question.type] || question.type}
-                                            </span>
-                                          )}
-                                        </div>
+                                        {/* 2024-05-09: 移除这里的问题类型显示，已移到header中 */}
                                       </div>
                                       
                                       {/* 单选/多选题选项预览 */}
@@ -1753,7 +1831,7 @@ const NewSurvey = ({ viewMode = false }) => {
                   
                     {showAddForm ? (
                         <div className="add-question-form">
-                        <h2>{editingQuestionId ? 'Edit Question' : 'Add New Question'}</h2>
+                        <h2>{editingQuestionId ? `Edit Question ${questions.find(q => q.id === editingQuestionId)?.number || ''}` : `Add New Question ${questions.length + 1}`}</h2>
                           <div className="form-group">
                             <label htmlFor="questionText">Question Text</label>
                             <textarea 

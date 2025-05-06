@@ -48,6 +48,145 @@ const PublishIcon = ({ color = "#252326" }) => (
   </svg>
 );
 
+// 2024-05-09: 添加QuestionOptions组件用于统一显示问题选项
+const QuestionOptions = ({ question, mode, currentAnswer, handleAnswerChange }) => {
+  const isInteractive = mode === 'respond';
+  
+  switch (question.type) {
+    case QUESTION_TYPES.SINGLE_CHOICE:
+      return (
+        <div className="question-options-display">
+          <div className="single-choice-container">
+            {question.options?.map((option) => (
+              <div 
+                key={option.id}
+                className={`single-choice-option ${currentAnswer === option.id ? 'selected' : ''} ${!isInteractive ? 'disabled' : ''}`}
+                onClick={() => {
+                  if (isInteractive) handleAnswerChange(question.id, option.id);
+                }}
+              >
+                <div className="option-radio">
+                  <div className={`radio-outer ${currentAnswer === option.id ? 'selected' : ''}`}>
+                    {currentAnswer === option.id && <div className="radio-inner"></div>}
+                  </div>
+                </div>
+                <span className="option-text">{option.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+      
+    case QUESTION_TYPES.MULTIPLE_CHOICE:
+      const selectedOptions = Array.isArray(currentAnswer) ? currentAnswer : [];
+      
+      return (
+        <div className="question-options-display">
+          <div className="multiple-choice-container">
+            {question.options?.map((option) => (
+              <div 
+                key={option.id}
+                className={`multiple-choice-option ${selectedOptions.includes(option.id) ? 'selected' : ''} ${!isInteractive ? 'disabled' : ''}`}
+                onClick={() => {
+                  if (isInteractive) {
+                    const newSelection = selectedOptions.includes(option.id)
+                      ? selectedOptions.filter(id => id !== option.id)
+                      : [...selectedOptions, option.id];
+                    handleAnswerChange(question.id, newSelection);
+                  }
+                }}
+              >
+                <div className="option-checkbox">
+                  <div className={`checkbox-outer ${selectedOptions.includes(option.id) ? 'selected' : ''}`}>
+                    {selectedOptions.includes(option.id) && <div className="checkbox-inner">✓</div>}
+                  </div>
+                </div>
+                <span className="option-text">{option.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+      
+    case QUESTION_TYPES.NPS:
+      return (
+        <div className="question-options-display">
+          <div className="nps-container">
+            <div className="nps-scale">
+              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
+                <div 
+                  key={value}
+                  className={`nps-option ${currentAnswer === value ? 'selected' : ''} ${!isInteractive ? 'disabled' : ''}`}
+                  onClick={() => {
+                    if (isInteractive) handleAnswerChange(question.id, value);
+                  }}
+                >
+                  {value}
+                </div>
+              ))}
+            </div>
+            <div className="nps-labels">
+              <span>
+                {question.options && question.options.length > 0 
+                  ? question.options.find(o => o.order === 1)?.text 
+                  : 'Not likely at all'}
+              </span>
+              <span>
+                {question.options && question.options.length > 0 
+                  ? question.options.find(o => o.order === 2)?.text 
+                  : 'Extremely likely'}
+              </span>
+            </div>
+          </div>
+        </div>
+      );
+      
+    case QUESTION_TYPES.BOOLEAN:
+      return (
+        <div className="question-options-display">
+          <div className="boolean-container">
+            <div className="boolean-options">
+              <div 
+                className={`boolean-option ${currentAnswer === true ? 'selected' : ''} ${!isInteractive ? 'disabled' : ''}`}
+                onClick={() => {
+                  if (isInteractive) handleAnswerChange(question.id, true);
+                }}
+              >
+                {question.options && question.options.length > 0 ? question.options[0]?.text : 'Yes'}
+              </div>
+              <div 
+                className={`boolean-option ${currentAnswer === false ? 'selected' : ''} ${!isInteractive ? 'disabled' : ''}`}
+                onClick={() => {
+                  if (isInteractive) handleAnswerChange(question.id, false);
+                }}
+              >
+                {question.options && question.options.length > 1 ? question.options[1]?.text : 'No'}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+      
+    case QUESTION_TYPES.TEXT:
+      return (
+        <div className="question-options-display">
+          <div className="text-container">
+            <textarea
+              value={currentAnswer || ''}
+              onChange={(e) => isInteractive && handleAnswerChange(question.id, e.target.value)}
+              className="text-input"
+              placeholder="Enter your answer here..."
+              disabled={!isInteractive}
+            />
+          </div>
+        </div>
+      );
+    
+    default:
+      return null;
+  }
+};
+
 /**
  * 统一的问卷视图组件
  * @param {string} mode - 组件模式：'preview'(默认)、'respond'、'view'
@@ -378,142 +517,41 @@ const SurveyView = () => {
       >
         <div className="question-header">
           <div className="question-info">
-            <span className="question-number">{question.number}.</span>
-            <span className="question-text">{question.text}</span>
-            {question.required && (
-              <span className="question-required-badge">Required</span>
-            )}
-          </div>
-          <div className="question-type">
-            {QUESTION_TYPE_NAMES[question.type] || 'Unknown Type'}
+            <div className="question-title-row">
+              <span className="question-number">{question.number}.</span>
+              <span className="question-text">{question.text}</span>
+              <div className="question-badges">
+                <span className="question-type-badge">
+                  {QUESTION_TYPE_NAMES[question.type] || 'Unknown Type'}
+                </span>
+                {question.required && (
+                  <Badge type="required">Required</Badge>
+                )}
+              </div>
+            </div>
           </div>
         </div>
         
         <div className="question-content">
-          {renderQuestionInput(question, isViewMode, isInteractive)}
+          <QuestionOptions 
+            question={question} 
+            mode={mode} 
+            currentAnswer={answers[question.id]} 
+            handleAnswerChange={handleAnswerChange} 
+          />
         </div>
       </div>
     );
   };
   
-  // 渲染问题输入控件
+  // 渲染问题输入控件 - 现在通过QuestionOptions组件实现
   const renderQuestionInput = (question, isViewMode, isInteractive) => {
-    // 2023-11-01: 简化问题输入渲染逻辑
-    const currentAnswer = answers[question.id];
-    
-    switch (question.type) {
-      case QUESTION_TYPES.SINGLE_CHOICE:
-        return (
-          <div className="single-choice-container">
-            {question.options?.map((option) => (
-              <div 
-                key={option.id}
-                className={`single-choice-option ${currentAnswer === option.id ? 'selected' : ''} ${!isInteractive ? 'disabled' : ''}`}
-                onClick={() => {
-                  if (isInteractive) handleAnswerChange(question.id, option.id);
-                }}
-              >
-                <div className="option-radio">
-                  <div className={`radio-outer ${currentAnswer === option.id ? 'selected' : ''}`}>
-                    {currentAnswer === option.id && <div className="radio-inner"></div>}
-                  </div>
-                </div>
-                <span className="option-text">{option.text}</span>
-              </div>
-            ))}
-          </div>
-        );
-        
-      case QUESTION_TYPES.MULTIPLE_CHOICE:
-        const selectedOptions = Array.isArray(currentAnswer) ? currentAnswer : [];
-        
-        return (
-          <div className="multiple-choice-container">
-            {question.options?.map((option) => (
-              <div 
-                key={option.id}
-                className={`multiple-choice-option ${selectedOptions.includes(option.id) ? 'selected' : ''} ${!isInteractive ? 'disabled' : ''}`}
-                onClick={() => {
-                  if (isInteractive) {
-                    const newSelection = selectedOptions.includes(option.id)
-                      ? selectedOptions.filter(id => id !== option.id)
-                      : [...selectedOptions, option.id];
-                    handleAnswerChange(question.id, newSelection);
-                  }
-                }}
-              >
-                <div className="option-checkbox">
-                  <div className={`checkbox-outer ${selectedOptions.includes(option.id) ? 'selected' : ''}`}>
-                    {selectedOptions.includes(option.id) && <div className="checkbox-inner">✓</div>}
-                  </div>
-                </div>
-                <span className="option-text">{option.text}</span>
-              </div>
-            ))}
-          </div>
-        );
-        
-      case QUESTION_TYPES.NPS:
-        return (
-          <div className="nps-container">
-            <div className="nps-scale">
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
-                <div 
-                  key={value}
-                  className={`nps-option ${currentAnswer === value ? 'selected' : ''} ${!isInteractive ? 'disabled' : ''}`}
-                  onClick={() => {
-                    if (isInteractive) handleAnswerChange(question.id, value);
-                  }}
-                >
-                  {value}
-                </div>
-              ))}
-            </div>
-            <div className="nps-labels">
-              <span>Not likely at all</span>
-              <span>Extremely likely</span>
-            </div>
-          </div>
-        );
-        
-      case QUESTION_TYPES.BOOLEAN:
-        return (
-          <div className="boolean-container">
-            <div className="boolean-options">
-              <div 
-                className={`boolean-option ${currentAnswer === true ? 'selected' : ''} ${!isInteractive ? 'disabled' : ''}`}
-                onClick={() => {
-                  if (isInteractive) handleAnswerChange(question.id, true);
-                }}
-              >
-                {question.options && question.options.length > 0 ? question.options[0]?.text : 'Yes'}
-              </div>
-              <div 
-                className={`boolean-option ${currentAnswer === false ? 'selected' : ''} ${!isInteractive ? 'disabled' : ''}`}
-                onClick={() => {
-                  if (isInteractive) handleAnswerChange(question.id, false);
-                }}
-              >
-                {question.options && question.options.length > 1 ? question.options[1]?.text : 'No'}
-              </div>
-            </div>
-          </div>
-        );
-        
-      case QUESTION_TYPES.TEXT:
-      default:
-        return (
-          <div className="text-container">
-            <textarea
-              value={currentAnswer || ''}
-              onChange={(e) => isInteractive && handleAnswerChange(question.id, e.target.value)}
-              className="text-input"
-              placeholder="Enter your answer here..."
-              disabled={!isInteractive}
-            />
-          </div>
-        );
-    }
+    return <QuestionOptions 
+      question={question} 
+      mode={mode} 
+      currentAnswer={answers[question.id]} 
+      handleAnswerChange={handleAnswerChange} 
+    />;
   };
   
   // 渲染页面标题和操作按钮
@@ -548,7 +586,7 @@ const SurveyView = () => {
                   onClick={() => navigate(`/survey-published/${id}`)}
                   className="published-button"
                 >
-                  Share Survey
+                  Basic Information
                 </Button>
               ) : (
                 <Button 

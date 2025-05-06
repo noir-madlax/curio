@@ -531,3 +531,194 @@
     font-size: 12px;
   }
 } 
+
+.question-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.question-badges {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.question-type-badge {
+  font-size: 14px;
+  color: #6B7280;
+  background-color: #F3F4F6;
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+.question-required-badge {
+  font-size: 14px;
+  color: #43A047;
+  background-color: #E8F5E9;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.question-text {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.question-title-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.question-number {
+  display: inline-block;
+  font-size: 16px;
+  font-weight: 600;
+  color: #6B7280;
+  margin-right: 8px;
+}
+
+.question-text {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+
+.question-badges {
+  display: flex;
+  gap: 8px;
+  margin-left: auto; /* 使badge移到最右侧 */
+  align-items: center;
+}
+
+.question-options-display {
+  margin-top: 16px;
+  width: 100%;
+}
+
+/* 单选题选项样式 */
+.single-choice-option {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  background-color: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.single-choice-option:hover:not(.disabled) {
+  background-color: #F0F4FF;
+  border-color: #D1DDFF;
+}
+
+.single-choice-option.selected {
+  background-color: #EBF5FF;
+  border-color: #BFDBFE;
+}
+
+.single-choice-option.disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.option-radio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+}
+
+.radio-outer {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #D1D5DB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.radio-outer.selected {
+  border-color: #3B82F6;
+}
+
+.radio-inner {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #3B82F6;
+}
+
+/* 多选题选项样式 */
+.multiple-choice-option {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+  background-color: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.multiple-choice-option:hover:not(.disabled) {
+  background-color: #F0F4FF;
+  border-color: #D1DDFF;
+}
+
+.multiple-choice-option.selected {
+  background-color: #EBF5FF;
+  border-color: #BFDBFE;
+}
+
+.multiple-choice-option.disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.option-checkbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+}
+
+.checkbox-outer {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  border: 2px solid #D1D5DB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.checkbox-outer.selected {
+  border-color: #3B82F6;
+  background-color: #3B82F6;
+}
+
+.checkbox-inner {
+  color: white;
+  font-size: 12px;
+  line-height: 1;
+}
