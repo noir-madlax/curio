@@ -1,0 +1,77 @@
+.thank-you-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+  width: 100%;
+  padding: 2rem;
+}
+
+.thank-you-card {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 3rem;
+  text-align: center;
+  max-width: 500px;
+  width: 100%;
+}
+
+.success-icon {
+  margin-bottom: 1.5rem;
+}
+
+.thank-you-card h1 {
+  color: #2E7D32;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.thank-you-card p {
+  color: #4A5568;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.action-button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease-in-out;
+}
+
+.action-button.primary {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+}
+
+.action-button.primary:hover {
+  background-color: #3d8c40;
+}
+
+/* 响应式样式 */
+@media (max-width: 576px) {
+  .thank-you-card {
+    padding: 2rem 1.5rem;
+  }
+  
+  .thank-you-card h1 {
+    font-size: 1.75rem;
+  }
+  
+  .thank-you-card p {
+    font-size: 1rem;
+  }
+} 

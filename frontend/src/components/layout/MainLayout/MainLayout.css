@@ -4,6 +4,7 @@
   background-color: #FFFFFF;
   width: 100%;
   overflow: hidden; /* 防止内容溢出 */
+
 }
 
 .main-content {
@@ -23,6 +24,7 @@
   display: flex; /* 2024-08-07T19:20:00Z 新增：启用flex布局 */
   flex-direction: column; /* 2024-08-07T19:20:00Z 新增：垂直方向布局 */
   align-items: center; /* 2024-08-07T19:20:00Z 新增：水平居中内容 */
+  
 }
 
 /* 响应式布局 */
@@ -35,4 +37,5 @@
   .sidebar {
     display: none; /* 移动设备下隐藏侧边栏 */
   }
+  
 } 

@@ -34,11 +34,12 @@
 /* 选项卡样式 */
 .new-survey-tabs {
   display: flex;
-  gap: 224px;
+  gap: 0;
   padding: 6px;
   background-color: #F4F4F5;
   border-radius: 8px;
   border-bottom: none;
+  margin-bottom: 24px;
 }
 
 .tab {
@@ -62,6 +63,7 @@
   border-radius: 4px;
   color: #333333;
   min-height: 36px;
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 /* 表单样式 */
@@ -489,52 +491,12 @@ input:checked + .switch-label:before {
   }
 }
 
-/* 2024-08-06 添加加载容器样式 */
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 200px;
-  width: 100%;
-}
-
-/* 新增: 加载效果样式 */
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(255, 255, 255, 0.8);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(0, 0, 0, 0.1);
-  border-radius: 50%;
-  border-top-color: #3C82F6;
-  animation: spin 1s ease-in-out infinite;
-  margin-bottom: 16px;
-}
-
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
 }
 
-.loading-message {
-  font-size: 16px;
-  color: #6B7280;
-  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-}
 
 /* 2024-08-07T16:00:00Z 新增：只读表单样式 */
 .form-group input.readonly, 
@@ -543,18 +505,6 @@ input:checked + .switch-label:before {
   border-color: #E6E6E9;
   cursor: default;
   color: #555555;
-}
-
-/* 2024-08-07T16:00:00Z 新增：Published按钮样式 */
-.published-button {
-  background-color: #35D572 !important;
-  color: white !important;
-  border-color: #35D572 !important;
-}
-
-.published-button:hover {
-  background-color: #2eba61 !important;
-  border-color: #2eba61 !important;
 }
 
 /* 2024-08-09T12:00:00Z 添加：合并布局的样式 */
@@ -616,4 +566,333 @@ input:checked + .switch-label:before {
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+.question-item.is-submitting {
+  opacity: 0.8;
+  background-color: #f9f9f9;
+  transition: all 0.5s ease;
+}
+
+.submitting-indicator {
+  color: #666;
+  font-size: 14px;
+  font-style: italic;
+  margin-left: 8px;
+}
+
+/* 2024-09-27T15:45:00Z 新增：问题类型选择器样式 */
+.question-type-select {
+  padding: 10px 14px;
+  border: 1.5px solid #E6E6E9;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #666666;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  width: 100%;
+  background-color: white;
+}
+
+/* 2024-09-27T15:45:00Z 新增：选项容器样式 */
+.options-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.option-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border: 1px solid #E6E6E9;
+  border-radius: 4px;
+  background-color: #FAFAFA;
+}
+
+.option-item.is-dragging {
+  background-color: #F0F7FF;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.option-number {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #ECECEE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #666666;
+}
+
+.option-input {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid #E6E6E9;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #666666;
+}
+
+.delete-option-button {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #FF5555;
+  color: white;
+  border: none;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.delete-option-button:disabled {
+  background-color: #CCCCCC;
+  cursor: not-allowed;
+}
+
+.add-option-button {
+  padding: 8px 16px;
+  background-color: #F0F7FF;
+  border: 1px dashed #3C82F6;
+  border-radius: 4px;
+  color: #3C82F6;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  align-self: flex-start;
+  margin-top: 8px;
+}
+
+.add-option-button:hover {
+  background-color: #E0EFFF;
+}
+
+/* 2024-09-27T15:45:00Z 新增：NPS题样式 */
+.nps-labels-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.nps-label-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nps-label-item span {
+  width: 30px;
+  font-weight: 600;
+}
+
+.nps-label-input {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid #E6E6E9;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #666666;
+}
+
+.nps-scale-preview {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 5px;
+  background-color: #F5F5F7;
+  border-radius: 4px;
+}
+
+.nps-number {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: white;
+  border: 1px solid #DDDDDD;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666666;
+}
+
+/* 2024-09-27T15:45:00Z 新增：判断题样式 */
+.boolean-labels-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.boolean-label-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.boolean-label-item span {
+  width: 30px;
+  font-weight: 600;
+}
+
+.boolean-label-input {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid #E6E6E9;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #666666;
+}
+
+/* 2024-09-27T16:20:00Z 新增：问题类型和必填标记样式 */
+.question-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.question-type-badge {
+  padding: 4px 8px;
+  background-color: #EBF4FF;
+  color: #3570EC;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.required-badge {
+  padding: 4px 8px;
+  background-color: #FFEAE9;
+  color: #F55247;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* 2024-10-05T15:35:00Z 新增：问题选项预览样式 */
+.question-options-preview {
+  margin-top: 10px;
+  padding-left: 15px;
+}
+
+.options-list-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.option-preview-item {
+  font-size: 14px;
+  color: #666;
+  padding: 2px 0;
+}
+
+.option-number {
+  font-weight: 500;
+  margin-right: 5px;
+}
+
+.no-options-message {
+  font-style: italic;
+  color: #999;
+  font-size: 14px;
+}
+
+.nps-preview {
+  margin-top: 10px;
+}
+
+.boolean-preview {
+  margin-top: 10px;
+  padding-left: 15px;
+}
+
+.boolean-options-preview {
+  font-size: 14px;
+  color: #666;
+}
+
+/* 2024-10-05T19:20:00Z 修改：强化必填标记样式，使其更明显 */
+.question-required-badge {
+  display: inline-block;
+  background-color: #ffd8d8;
+  color: #d32f2f;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  margin-left: 8px;
+  font-weight: 600;
+  border: 1px solid #ffb6b6;
+}
+
+/* 修改问题类型标签样式 */
+.question-type-badge {
+  display: inline-block;
+  background-color: #e3f2fd;
+  color: #1976d2;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+/* 2024-10-05T21:05:00Z 新增：问题编号右侧显示的必答标识样式 */
+.question-required-badge-inline {
+  display: inline-block;
+  background-color: #ffd8d8;
+  color: #d32f2f;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  margin-left: 8px;
+  font-weight: 600;
+  border: 1px solid #ffb6b6;
+  vertical-align: middle;
+}
+
+/* 2024-10-06T12:30:00Z 新增：NPS标签预览样式 */
+.nps-labels-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.nps-labels-preview .nps-label-item {
+  display: flex;
+  font-size: 14px;
+  color: #666;
+}
+
+.nps-labels-preview .nps-label-item span {
+  font-weight: 600;
+  margin-right: 8px;
+  min-width: 25px;
+}
+
+/* 2024-10-06T16:35:00Z 新增：绿色必填标记样式 */
+.question-required-badge-green {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
 } 

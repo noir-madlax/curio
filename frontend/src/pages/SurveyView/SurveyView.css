@@ -1,0 +1,247 @@
+.survey-view-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 24px;
+}
+
+.survey-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-title h1 {
+  font-size: 28px;
+  font-weight: 600;
+  color: #232325;
+  margin: 0;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.header-actions {
+  display: flex;
+  gap: 15px;
+}
+
+.button-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.survey-view-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 16px;
+}
+
+.survey-description-section {
+  margin-bottom: 0;
+}
+
+.description-label {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333333;
+  margin-right: 8px;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.survey-description {
+  font-size: 16px;
+  font-weight: 400;
+  color: #666666;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-style: italic;
+  display: inline;
+}
+
+.survey-questions-section {
+  background-color: #FFFFFF;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: #323234;
+  margin: 0 0 16px 0;
+}
+
+.survey-questions {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 24px;
+}
+
+.survey-questions.is-empty {
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  min-height: auto;
+}
+
+.empty-questions-message {
+  text-align: center;
+  margin-bottom: 0px;
+}
+
+.empty-questions-message p {
+  font-size: 18.6px;
+  color: #888888;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 400;
+  margin: 0;
+}
+
+.question-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.question-item {
+  padding: 16px;
+  border: 1px solid #E3E3E6;
+  border-radius: 8px;
+  background-color: #FEFEFE;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0px;
+  gap: 16px;
+}
+
+.question-number {
+  font-size: 16px;
+  font-weight: 600;
+  color: #666666;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.question-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-radius: 8px;
+  margin-top: 0px;
+}
+
+.question-text {
+  font-size: 18px;
+  font-weight: 500;
+  color: #333333;
+  line-height: 1.4;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 48px auto;
+  max-width: 600px;
+  text-align: center;
+}
+
+/* 加载动画 */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 发布按钮样式 */
+.published-button {
+  background-color: #35D572 !important;
+  color: white !important;
+  border-color: #35D572 !important;
+}
+
+.published-button:hover {
+  background-color: #2eba61 !important;
+  border-color: #2eba61 !important;
+}
+
+/* 响应模式特殊样式 */
+.question-options label:hover {
+  background-color: #F0F4FF;
+  border-color: #D1DDFF;
+}
+
+.question-options input[type="radio"]:checked + span,
+.question-options input[type="checkbox"]:checked + span {
+  font-weight: 500;
+}
+
+/* 提交按钮状态 */
+.submit-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* 成功和警告信息框 */
+.success-container,
+.warning-container {
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.success-container {
+  background-color: #E8F5E9;
+  border: 1px solid #A5D6A7;
+}
+
+.warning-container {
+  background-color: #FFF8E1;
+  border: 1px solid #FFE082;
+}
+
+/* 响应式布局 */
+@media (max-width: 768px) {
+  .survey-preview-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  
+  .header-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  
+  .survey-questions-section {
+    padding: 16px;
+  }
+  
+  .question-options label {
+    padding: 12px;
+  }
+} 

@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '../../components/layout/MainLayout/MainLayout';
 import Badge from '../../components/common/Badge/Badge';
+import { FullPageLoading } from '../../components/common/Loading';
 import './SurveyResult.css';
 
 // 引入服务函数
@@ -111,10 +112,7 @@ const SurveyResult = () => {
   if (loading) {
     return (
       <MainLayout>
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <div className="loading-message">Loading survey results...</div>
-        </div>
+        <FullPageLoading message="Loading survey results..." />
       </MainLayout>
     );
   }

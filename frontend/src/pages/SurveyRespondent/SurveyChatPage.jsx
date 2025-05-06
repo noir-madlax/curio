@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
+import { LoadingIndicator, LoadingOverlay } from '../../components/common/Loading';
 // 2024-08-06: Import custom SVG icons
 import './SurveyChatPage.css'; // Import styles
 // 2024-08-23: 导入发送按钮图标
@@ -427,6 +428,11 @@ function SurveyChatPage() {
 
   return (
     <div className="survey-chat-page">
+      {/* 添加全屏加载覆盖层 */}
+      {loading && (
+        <LoadingOverlay message="Initializing chat..." />
+      )}
+
       {/* Top title bar - 2024-08-23: 更新标题为居中 */}
       <header className="chat-header">
         <h1>Product Feedback Survey</h1>
@@ -488,7 +494,7 @@ function SurveyChatPage() {
           <div className="message-row ai-message-row">
             <div className="avatar ai-avatar">C</div>
             <div className="message-bubble ai-message">
-              <p>思考中...</p>
+              <p>思考中... <LoadingIndicator text="" showText={false} /></p>
             </div>
           </div>
         )}
@@ -517,7 +523,10 @@ function SurveyChatPage() {
           disabled={!inputValue.trim() || isLoading} // 加载时禁用发送按钮
           aria-label="发送消息"
         >
-          <img src={sendIcon} alt="发送消息" className="send-icon" />
+          {isLoading ? 
+            <LoadingIndicator text="" showText={false} /> : 
+            <img src={sendIcon} alt="发送消息" className="send-icon" />
+          }
         </button>
       </div>
     </div>

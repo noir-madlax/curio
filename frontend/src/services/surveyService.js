@@ -254,6 +254,7 @@ export const getQuestionsBySurveyId = async (surveyId) => {
       type: question.question_type,
       followupCount: question.followup_count || 0,
       objectives: question.question_objectives || '',
+      required: question.is_required,
       createdAt: question.created_at,
       updatedAt: question.updated_at
     }));
@@ -291,6 +292,8 @@ export const createQuestion = async (questionData) => {
       question_type: questionData.type || 'text',
       followup_count: questionData.followupCount || 0,
       question_objectives: questionData.objectives || '',
+      // 2024-10-05T20:35:00Z 新增：设置is_required字段
+      is_required: questionData.required !== undefined ? questionData.required : false,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
@@ -316,6 +319,8 @@ export const createQuestion = async (questionData) => {
         type: createdQuestion.question_type,
         followupCount: createdQuestion.followup_count || 0,
         objectives: createdQuestion.question_objectives || '',
+        // 2024-10-05T20:35:00Z 新增：返回is_required字段
+        required: createdQuestion.is_required,
         createdAt: createdQuestion.created_at,
         updatedAt: createdQuestion.updated_at
       };
@@ -343,6 +348,8 @@ export const updateQuestion = async (id, questionData) => {
     if (questionData.type !== undefined) updateData.question_type = questionData.type;
     if (questionData.followupCount !== undefined) updateData.followup_count = questionData.followupCount;
     if (questionData.objectives !== undefined) updateData.question_objectives = questionData.objectives;
+    // 2024-10-05T20:40:00Z 新增：更新is_required字段
+    if (questionData.required !== undefined) updateData.is_required = questionData.required;
 
     // 执行更新操作
     const { data, error } = await supabase
@@ -366,6 +373,8 @@ export const updateQuestion = async (id, questionData) => {
         type: updatedQuestion.question_type,
         followupCount: updatedQuestion.followup_count || 0,
         objectives: updatedQuestion.question_objectives || '',
+        // 2024-10-05T20:40:00Z 新增：返回is_required字段
+        required: updatedQuestion.is_required,
         updatedAt: updatedQuestion.updated_at
       };
     } else {
@@ -378,6 +387,7 @@ export const updateQuestion = async (id, questionData) => {
 };
 
 // 2024-07-30T10:00:00Z 新增：删除问题
+// 2024-10-05T20:45:00Z 修改：重写删除问题函数，解决supabase.raw问题
 export const deleteQuestion = async (id) => {
   console.log(`deleteQuestion 被调用，ID: ${id}`);
   try {
@@ -404,17 +414,31 @@ export const deleteQuestion = async (id) => {
       throw new Error(deleteError.message || 'Failed to delete question');
     }
 
-    // 重新排序剩余问题 - 找到所有在这个问题之后的问题，并将它们的顺序减1
-    const { error: reorderError } = await supabase
+    // 获取所有需要重排序的问题（order大于删除问题的order的所有问题）
+    const { data: questionsToReorder, error: fetchReorderError } = await supabase
       .from('cu_survey_questions')
-      .update({ question_order: supabase.raw('question_order - 1') })
+      .select('id, question_order')
       .eq('survey_id', questionData.survey_id)
-      .gt('question_order', questionData.question_order);
-
-    if (reorderError) {
-      console.error(`Error reordering questions after deletion of question ${id}:`, reorderError);
-      // 不抛出异常，因为问题已经成功删除，只是后续排序出现问题
+      .gt('question_order', questionData.question_order)
+      .order('question_order', { ascending: true });
+    
+    if (fetchReorderError) {
+      console.error(`Error fetching questions to reorder after deletion of question ${id}:`, fetchReorderError);
       console.warn('Questions were not reordered correctly after deletion');
+      return { success: true, message: 'Question deleted successfully, but reordering failed' };
+    }
+    
+    // 逐个更新问题的order
+    for (const question of questionsToReorder) {
+      const newOrder = question.question_order - 1;
+      const { error: updateOrderError } = await supabase
+        .from('cu_survey_questions')
+        .update({ question_order: newOrder })
+        .eq('id', question.id);
+      
+      if (updateOrderError) {
+        console.error(`Error updating order for question ${question.id}:`, updateOrderError);
+      }
     }
 
     return { success: true, message: 'Question deleted successfully' };
@@ -537,3 +561,330 @@ export const getSurveyResponseConversations = async (responseId) => {
 // - getSurveyResponses 
 // - getQuestionCompletionRates
 // - getResponsesOverTime
+
+// 2024-08-15T19:00:00Z 新增：提交传统问卷回答（不使用聊天模式）
+export const submitSurveyResponse = async (surveyId, responseData) => {
+  console.log(`submitSurveyResponse 被调用，Survey ID: ${surveyId}，数据:`, responseData);
+  try {
+    // 1. 创建一个问卷回答记录
+    const { data: surveyResponse, error: responseError } = await supabase
+      .from('cu_survey_responses')
+      .insert([
+        { 
+          survey_id: surveyId,
+          status: 'completed',
+          respondent_identifier: responseData.respondentIdentifier || null,
+          response_mode: 'standard' // 标记为标准回答模式（区别于聊天模式）
+        }
+      ])
+      .select();
+
+    if (responseError) {
+      console.error(`Error creating survey response for survey ${surveyId}:`, responseError);
+      throw new Error(responseError.message || 'Failed to create survey response');
+    }
+
+    if (!surveyResponse || surveyResponse.length === 0) {
+      throw new Error('Failed to retrieve created survey response data');
+    }
+
+    const surveyResponseId = surveyResponse[0].id;
+
+    // 2. 为每个问题答案创建记录
+    const answerData = responseData.responses.map(response => ({
+      survey_response_id: surveyResponseId,
+      question_id: response.questionId,
+      answer_text: response.text,
+      answer_type: 'text',
+      is_initial_answer: true
+    }));
+
+    const { error: answersError } = await supabase
+      .from('cu_question_answers')
+      .insert(answerData);
+
+    if (answersError) {
+      console.error(`Error saving question answers for response ${surveyResponseId}:`, answersError);
+      throw new Error(answersError.message || 'Failed to save question answers');
+    }
+
+    return {
+      success: true,
+      responseId: surveyResponseId,
+      message: 'Survey response submitted successfully'
+    };
+  } catch (error) {
+    console.error(`Error in submitSurveyResponse service for survey ${surveyId}:`, error);
+    throw error;
+  }
+};
+
+// ===== 问题选项管理 =====
+// 2024-09-27T15:00:00Z 新增：问题选项相关服务函数
+
+// 获取问题的所有选项
+export const getQuestionOptions = async (questionId) => {
+  console.log(`getQuestionOptions 被调用，Question ID: ${questionId}`);
+  try {
+    const { data, error } = await supabase
+      .from('cu_survey_question_options')
+      .select('*')
+      .eq('question_id', questionId)
+      .order('option_order', { ascending: true });
+
+    if (error) {
+      console.error(`获取问题选项失败，Question ID: ${questionId}`, error);
+      throw new Error(error.message || '获取问题选项失败');
+    }
+
+    return data.map(option => ({
+      id: option.id,
+      questionId: option.question_id,
+      text: option.option_text,
+      order: option.option_order,
+      value: option.option_text, // 使用text作为value
+      createdAt: option.created_at,
+      updatedAt: option.updated_at
+    }));
+  } catch (error) {
+    console.error(`Error in getQuestionOptions service for Question ID ${questionId}:`, error);
+    throw error;
+  }
+};
+
+// 创建问题选项
+export const createQuestionOption = async (questionId, optionData) => {
+  console.log(`createQuestionOption 被调用，Question ID: ${questionId}，数据:`, optionData);
+  try {
+    // 获取当前问题的选项数量，用于设置新选项的顺序
+    const { count, error: countError } = await supabase
+      .from('cu_survey_question_options')
+      .select('*', { count: 'exact', head: true })
+      .eq('question_id', questionId);
+
+    if (countError) {
+      console.error(`Error counting options for question ${questionId}:`, countError);
+      throw new Error('Failed to determine option order');
+    }
+
+    // 准备要插入的选项数据
+    const newOptionData = {
+      question_id: questionId,
+      option_text: optionData.text || 'New Option',
+      option_order: optionData.order || (count + 1), // 如果未指定顺序，默认添加到最后
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    // 执行插入操作
+    const { data, error } = await supabase
+      .from('cu_survey_question_options')
+      .insert([newOptionData])
+      .select();
+
+    if (error) {
+      console.error('Supabase error creating option:', error);
+      throw new Error(error.message || 'Failed to create option');
+    }
+
+    if (data && data.length > 0) {
+      const createdOption = data[0];
+      return {
+        id: createdOption.id,
+        questionId: createdOption.question_id,
+        text: createdOption.option_text,
+        order: createdOption.option_order,
+        createdAt: createdOption.created_at,
+        updatedAt: createdOption.updated_at
+      };
+    } else {
+      throw new Error('Failed to retrieve created option data');
+    }
+  } catch (error) {
+    console.error(`Error in createQuestionOption service for Question ID ${questionId}:`, error);
+    throw error;
+  }
+};
+
+// 更新问题选项
+export const updateQuestionOption = async (optionId, optionData) => {
+  console.log(`updateQuestionOption 被调用，Option ID: ${optionId}，数据:`, optionData);
+  try {
+    // 构建要更新的数据
+    const updateData = {
+      updated_at: new Date().toISOString()
+    };
+
+    // 只更新提供的字段
+    if (optionData.text !== undefined) updateData.option_text = optionData.text;
+    if (optionData.order !== undefined) updateData.option_order = optionData.order;
+
+    // 执行更新操作
+    const { data, error } = await supabase
+      .from('cu_survey_question_options')
+      .update(updateData)
+      .eq('id', optionId)
+      .select();
+
+    if (error) {
+      console.error(`Supabase error updating option ${optionId}:`, error);
+      throw new Error(error.message || 'Failed to update option');
+    }
+
+    if (data && data.length > 0) {
+      const updatedOption = data[0];
+      return {
+        id: updatedOption.id,
+        questionId: updatedOption.question_id,
+        text: updatedOption.option_text,
+        order: updatedOption.option_order,
+        updatedAt: updatedOption.updated_at
+      };
+    } else {
+      throw new Error('Failed to retrieve updated option data');
+    }
+  } catch (error) {
+    console.error(`Error in updateQuestionOption service for Option ID ${optionId}:`, error);
+    throw error;
+  }
+};
+
+// 删除问题选项
+// 2024-10-05T20:50:00Z 修改：重写删除选项函数，解决supabase.raw问题
+export const deleteQuestionOption = async (optionId) => {
+  console.log(`deleteQuestionOption 被调用，Option ID: ${optionId}`);
+  try {
+    // 先获取选项信息，特别是 question_id 和 option_order，用于后续处理
+    const { data: optionData, error: fetchError } = await supabase
+      .from('cu_survey_question_options')
+      .select('question_id, option_order')
+      .eq('id', optionId)
+      .single();
+
+    if (fetchError) {
+      console.error(`Error fetching option ${optionId} before deletion:`, fetchError);
+      throw new Error('Failed to fetch option details before deletion');
+    }
+
+    // 执行删除操作
+    const { error: deleteError } = await supabase
+      .from('cu_survey_question_options')
+      .delete()
+      .eq('id', optionId);
+
+    if (deleteError) {
+      console.error(`Supabase error deleting option ${optionId}:`, deleteError);
+      throw new Error(deleteError.message || 'Failed to delete option');
+    }
+
+    // 获取所有需要重排序的选项
+    const { data: optionsToReorder, error: fetchReorderError } = await supabase
+      .from('cu_survey_question_options')
+      .select('id, option_order')
+      .eq('question_id', optionData.question_id)
+      .gt('option_order', optionData.option_order)
+      .order('option_order', { ascending: true });
+    
+    if (fetchReorderError) {
+      console.error(`Error fetching options to reorder after deletion of option ${optionId}:`, fetchReorderError);
+      console.warn('Options were not reordered correctly after deletion');
+      return { success: true, message: 'Option deleted successfully, but reordering failed' };
+    }
+    
+    // 逐个更新选项的order
+    for (const option of optionsToReorder) {
+      const newOrder = option.option_order - 1;
+      const { error: updateOrderError } = await supabase
+        .from('cu_survey_question_options')
+        .update({ option_order: newOrder })
+        .eq('id', option.id);
+      
+      if (updateOrderError) {
+        console.error(`Error updating order for option ${option.id}:`, updateOrderError);
+      }
+    }
+
+    return { success: true, message: 'Option deleted successfully' };
+  } catch (error) {
+    console.error(`Error in deleteQuestionOption service for Option ID ${optionId}:`, error);
+    throw error;
+  }
+};
+
+// 重新排序问题选项
+export const reorderQuestionOptions = async (questionId, newOrder) => {
+  console.log(`reorderQuestionOptions 被调用，Question ID: ${questionId}，新顺序:`, newOrder);
+  try {
+    // newOrder 应该是一个对象数组，每个对象包含 id 和 newOrder
+    // 例如：[{id: 1, newOrder: 3}, {id: 2, newOrder: 1}, {id: 3, newOrder: 2}]
+    
+    // 为每个选项创建更新操作
+    const updates = newOrder.map(item => 
+      supabase
+        .from('cu_survey_question_options')
+        .update({ option_order: item.newOrder, updated_at: new Date().toISOString() })
+        .eq('id', item.id)
+    );
+    
+    // 使用 Promise.all 并行执行所有更新
+    await Promise.all(updates);
+    
+    return { success: true, message: 'Options reordered successfully' };
+  } catch (error) {
+    console.error(`Error in reorderQuestionOptions service for Question ID ${questionId}:`, error);
+    throw error;
+  }
+};
+
+// 批量创建问题选项
+export const createMultipleQuestionOptions = async (questionId, optionsData) => {
+  console.log(`createMultipleQuestionOptions 被调用，Question ID: ${questionId}，选项数量:`, optionsData.length);
+  try {
+    if (!optionsData || optionsData.length === 0) {
+      return { success: true, message: 'No options to create', options: [] };
+    }
+
+    // 准备要插入的选项数据
+    const newOptionsData = optionsData.map((option, index) => ({
+      question_id: questionId,
+      option_text: option.text || `Option ${index + 1}`,
+      option_order: option.order || (index + 1),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }));
+
+    // 执行批量插入操作
+    const { data, error } = await supabase
+      .from('cu_survey_question_options')
+      .insert(newOptionsData)
+      .select();
+
+    if (error) {
+      console.error('Supabase error creating multiple options:', error);
+      throw new Error(error.message || 'Failed to create options');
+    }
+
+    if (data && data.length > 0) {
+      const createdOptions = data.map(option => ({
+        id: option.id,
+        questionId: option.question_id,
+        text: option.option_text,
+        order: option.option_order,
+        value: option.option_text,
+        createdAt: option.created_at,
+        updatedAt: option.updated_at
+      }));
+      
+      return { 
+        success: true, 
+        message: `Successfully created ${data.length} options`,
+        options: createdOptions 
+      };
+    } else {
+      throw new Error('Failed to retrieve created options data');
+    }
+  } catch (error) {
+    console.error(`Error in createMultipleQuestionOptions service for Question ID ${questionId}:`, error);
+    throw error;
+  }
+};

@@ -1,0 +1,460 @@
+.survey-response-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 24px;
+}
+
+.survey-response-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.header-title h1 {
+  font-size: 28px;
+  font-weight: 600;
+  color: #232325;
+  margin: 0;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.header-actions {
+  display: flex;
+  gap: 15px;
+}
+
+.button-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.survey-response-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 16px;
+}
+
+.survey-description-section {
+  margin-bottom: 0;
+}
+
+.survey-description {
+  font-size: 16px;
+  font-weight: 400;
+  color: #666666;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-style: italic;
+}
+
+.survey-response-form {
+  width: 100%;
+}
+
+.response-questions-section {
+  background-color: #FFFFFF;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: #323234;
+  margin: 0 0 16px 0;
+}
+
+.question-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.question-item {
+  padding: 16px;
+  border: 1px solid #E3E3E6;
+  border-radius: 8px;
+  background-color: #FEFEFE;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 16px;
+}
+
+.question-number-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.question-number {
+  font-size: 16px;
+  font-weight: 600;
+  color: #666666;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.question-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.question-text {
+  font-size: 18px;
+  font-weight: 500;
+  color: #333333;
+  line-height: 1.4;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.response-input textarea {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid #E6E6E9;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #666666;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  resize: vertical;
+}
+
+.response-input textarea:focus {
+  outline: none;
+  border-color: #2463EB;
+}
+
+.response-input textarea::placeholder {
+  color: #888888;
+}
+
+.response-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 48px auto;
+  max-width: 600px;
+  text-align: center;
+}
+
+.success-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 48px auto;
+  max-width: 600px;
+  text-align: center;
+  background-color: #F9FFF9;
+  border: 1px solid #35D572;
+  border-radius: 8px;
+  padding: 32px;
+}
+
+.success-container h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #35D572;
+  margin: 0;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.success-container p {
+  font-size: 16px;
+  color: #666666;
+  margin: 0;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 响应式布局 */
+@media (max-width: 768px) {
+  .survey-response-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  
+  .header-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+  
+  .response-questions-section {
+    padding: 16px;
+  }
+  
+  .response-actions {
+    flex-direction: column;
+  }
+  
+  .response-actions button {
+    width: 100%;
+  }
+}
+
+/* 移动端适配的样式 */
+.mobile-survey-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  background-color: #f8f9fa;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.mobile-survey-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.mobile-logo {
+  height: 32px;
+}
+
+.mobile-survey-content {
+  flex: 1;
+  padding: 16px;
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.mobile-survey-title h1 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #333;
+  margin: 8px 0 16px;
+  text-align: center;
+}
+
+.mobile-description-section {
+  background-color: #f0f7ff;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  border: 1px solid #e0ecff;
+}
+
+.mobile-description {
+  font-size: 16px;
+  line-height: 1.5;
+  color: #4a5568;
+  margin: 0;
+}
+
+.mobile-section-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 16px;
+}
+
+.mobile-question-item {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.mobile-question-number {
+  font-size: 14px;
+  font-weight: 600;
+  color: #718096;
+  margin-bottom: 8px;
+}
+
+.mobile-question-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: #2d3748;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.mobile-response-input textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 16px;
+  resize: vertical;
+  min-height: 80px;
+  background-color: #f8fafc;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.mobile-response-input textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.mobile-response-input textarea::placeholder {
+  color: #a0aec0;
+}
+
+.mobile-response-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 24px;
+  margin-bottom: 32px;
+}
+
+.mobile-reset-button, .mobile-submit-button {
+  flex: 1;
+  max-width: 48%;
+}
+
+.mobile-survey-footer {
+  text-align: center;
+  padding: 16px;
+  color: #718096;
+  font-size: 14px;
+  background-color: #ffffff;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* 错误和成功状态样式 */
+.error-container, .success-container{
+  text-align: center;
+  padding: 24px;
+  margin: 32px auto;
+  max-width: 90%;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.error-container h2, .success-container h2 {
+  color: #2d3748;
+  margin-bottom: 16px;
+  font-size: 22px;
+}
+
+.error-container p, .success-container p {
+  color: #4a5568;
+  margin-bottom: 24px;
+  font-size: 16px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: #3b82f6;
+  animation: spin 1s ease-in-out infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-message {
+  color: #718096;
+  font-size: 16px;
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* 媒体查询优化不同屏幕尺寸 */
+@media (min-width: 640px) {
+  .mobile-survey-content {
+    padding: 24px;
+  }
+  
+  .mobile-survey-title h1 {
+    font-size: 24px;
+  }
+  
+  .mobile-response-actions {
+    justify-content: center;
+    gap: 16px;
+  }
+  
+  .mobile-reset-button, .mobile-submit-button {
+    max-width: 180px;
+  }
+}
+
+@media (max-width: 359px) {
+  .mobile-survey-title h1 {
+    font-size: 20px;
+  }
+  
+  .mobile-question-text {
+    font-size: 15px;
+  }
+  
+  .mobile-response-input textarea {
+    font-size: 15px;
+    padding: 10px;
+  }
+}
+
+/* 针对适配iOS和Safari的样式调整 */
+@supports (-webkit-touch-callout: none) {
+  .mobile-response-input textarea {
+    -webkit-appearance: none;
+  }
+  
+  .mobile-survey-container {
+    -webkit-overflow-scrolling: touch;
+  }
+} 

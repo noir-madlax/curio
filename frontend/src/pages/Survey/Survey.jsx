@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import MainLayout from '../../components/layout/MainLayout/MainLayout';
 import SurveyCard from '../../components/feature/Survey/SurveyCard/SurveyCard';
 import Button from '../../components/common/Button/Button';
+import { FullPageLoading } from '../../components/common/Loading';
 import './Survey.css';
 import { getAllSurveys } from '../../services/surveyService';
 
@@ -48,12 +49,7 @@ const Survey = () => {
   
   const renderContent = () => {
     if (isLoading) {
-      return (
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <div className="loading-message">Loading surveys...</div>
-        </div>
-      );
+      return <FullPageLoading message="Loading surveys..." />;
     }
     if (error) {
       return <div className="error-message">Error: {error}</div>;

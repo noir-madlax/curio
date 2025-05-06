@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import MainLayout from '../../components/layout/MainLayout/MainLayout';
 import Button from '../../components/common/Button/Button';
+import { FullPageLoading } from '../../components/common/Loading';
 import { getSurveyById } from '../../services/surveyService';
 import './SurveyPublished.css';
 
@@ -97,10 +98,7 @@ const SurveyPublished = () => {
   if (isLoading) {
     return (
       <MainLayout>
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <div className="loading-message">Loading survey data...</div>
-        </div>
+        <FullPageLoading message="Loading survey data..." />
       </MainLayout>
     );
   }
