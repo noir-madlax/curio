@@ -12,6 +12,7 @@ import viewIcon from '../../../../assets/icons/view1_icon.svg';
 import insightsIcon from '../../../../assets/icons/insights_icon.svg';
 import editIcon from '../../../../assets/icons/edit_icon.svg';
 import deleteIcon from '../../../../assets/icons/delete_icon.svg';
+import questionIcon from '../../../../assets/icons/Question_Icon.svg';
 
 // 导入删除服务
 import { deleteSurvey } from '../../../../services/surveyService';
@@ -24,10 +25,11 @@ const ViewIcon = () => <img src={viewIcon} alt="View" className="icon" />;
 const InsightsIcon = () => <img src={insightsIcon} alt="Insights" className="icon" />;
 const EditIcon = () => <img src={editIcon} alt="Edit" className="icon" />;
 const DeleteIcon = () => <img src={deleteIcon} alt="Delete" className="icon" />;
+const QuestionIcon = () => <img src={questionIcon} alt="Questions" className="icon" />;
 
 const SurveyCard = ({ survey, onDelete }) => {
   const navigate = useNavigate();
-  const { title, status, updatedAt, responses, completionRate, id } = survey;
+  const { title, status, updatedAt, responses, completionRate, id, questionCount } = survey;
   // 2024-08-07T09:45:00Z 新增：添加loading状态
   const [isLoading, setIsLoading] = useState(false);
   // 2024-08-07T16:00:00Z 新增：添加hover状态
@@ -47,7 +49,7 @@ const SurveyCard = ({ survey, onDelete }) => {
   
   const handleView = () => {
     // 2024-08-07T16:00:00Z 修改：导航到查看页面而非回答页面
-    navigate(`/surveys/preview/${id}`);
+    navigate(`/surveys/view/${id}`);
   };
   
   // 2024-07-25: 更新Insights按钮处理函数，导航到SurveyInsight页面
@@ -122,18 +124,25 @@ const SurveyCard = ({ survey, onDelete }) => {
       <h3 className="survey-title">{title}</h3>
       
       <div className="survey-stats">
-        <div className="stat-item">
-          <ResponsesIcon />
-          <span className="stat-text">{responses} responses</span>
-        </div>
-        
-        {status === 'Published' && (
-          <div className="stat-item">
-            <CompletionIcon />
-            <div className="completion-rate">
-              <span className="rate-value">{completionRate}%</span>
-              <span className="rate-label">completion</span>
+        {status === 'Published' ? (
+          <>
+            <div className="stat-item">
+              <ResponsesIcon />
+              <span className="stat-text">{responses} responses</span>
             </div>
+            
+            <div className="stat-item">
+              <CompletionIcon />
+              <div className="completion-rate">
+                <span className="rate-value">{completionRate}%</span>
+                <span className="rate-label">completion</span>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="stat-item">
+            <QuestionIcon />
+            <span className="stat-text">{questionCount || 0} questions</span>
           </div>
         )}
       </div>

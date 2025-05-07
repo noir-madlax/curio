@@ -2,6 +2,8 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import MainLayout from '../../components/layout/MainLayout/MainLayout';
 import Badge from '../../components/common/Badge/Badge';
+// 2024-10-14: 导入公共组件
+import SurveyHeader from '../../components/common/SurveyHeader';
 import './SurveyInsight.css';
 
 // 2024-07-24: 模拟数据，用于静态页面展示
@@ -76,15 +78,11 @@ const SurveyInsight = () => {
   return (
     <MainLayout>
       <div className="survey-insight-container">
-        {/* 标题区域 */}
-        <div className="survey-insight-header">
-          <div className="survey-title-info">
-            <div className="title-badge-container">
-              <h1>{survey.title}</h1>
-              <Badge status={survey.status} />
-            </div>
-          </div>
-        </div>
+        {/* 2024-10-14: 使用SurveyHeader公共组件替换原有的header结构 */}
+        <SurveyHeader
+          title={survey.title}
+          leftContent={<Badge status={survey.status} />}
+        />
         
         {/* 概览区域 */}
         <div className="insight-overview">

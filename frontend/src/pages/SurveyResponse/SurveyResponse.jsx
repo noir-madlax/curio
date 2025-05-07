@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Button from '../../components/common/Button/Button';
 import { FullPageLoading, LoadingOverlay } from '../../components/common/Loading';
+// 2024-10-14: 导入公共组件
+import SurveyHeader from '../../components/common/SurveyHeader';
+import SurveyDescription from '../../components/common/SurveyDescription';
 import './SurveyResponse.css';
 import { 
   getSurveyById, 
@@ -167,19 +170,18 @@ const SurveyResponse = () => {
       </div>
       
       <div className="mobile-survey-content">
-        <div className="mobile-survey-title">
-          <h1>{surveyTitle}</h1>
-        </div>
+        {/* 2024-10-14: 使用SurveyHeader公共组件替换原有的标题结构 */}
+        <SurveyHeader
+          title={surveyTitle}
+          style={{ marginBottom: '16px' }} // 调整移动端样式的间距
+        />
         
         {isSubmitting && (
           <LoadingOverlay message="Submitting your responses..." />
         )}
         
-        <div className="mobile-description-section">
-          {surveyDescription && (
-            <p className="mobile-description">{surveyDescription}</p>
-          )}
-        </div>
+        {/* 2024-10-14: 使用SurveyDescription公共组件替换原有的描述结构 */}
+        <SurveyDescription description={surveyDescription} style={{ marginBottom: '16px' }} />
         
         <form onSubmit={handleSubmit} className="mobile-survey-form">
           <div className="mobile-questions-section">
@@ -198,9 +200,9 @@ const SurveyResponse = () => {
                     <div className="mobile-question-text">{question.text}</div>
                     <div className="mobile-response-input">
                       <textarea
-                        value={responses[question.id]}
+                        value={responses[question.id] || ''}
                         onChange={(e) => handleChange(question.id, e.target.value)}
-                        placeholder="Type your answer here..."
+                        placeholder="Enter your answer here..."
                         rows={3}
                       />
                     </div>
@@ -208,32 +210,26 @@ const SurveyResponse = () => {
                 ))}
               </div>
             )}
+          </div>
             
-            <div className="mobile-response-actions">
+          <div className="mobile-form-actions">
               <Button 
                 variant="secondary" 
                 onClick={handleReset}
-                disabled={isSubmitting}
-                type="button"
-                className="mobile-reset-button"
+              className="mobile-button"
               >
                 Reset
               </Button>
               <Button 
                 variant="primary" 
-                disabled={isSubmitting || questions.length === 0}
                 type="submit"
-                className="mobile-submit-button"
+              className="mobile-button"
+              disabled={isSubmitting}
               >
-                Submit Response
+              Submit
               </Button>
-            </div>
           </div>
         </form>
-      </div>
-      
-      <div className="mobile-survey-footer">
-        <p>Powered by Curio</p>
       </div>
     </div>
   );

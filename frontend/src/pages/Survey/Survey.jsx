@@ -4,6 +4,7 @@ import MainLayout from '../../components/layout/MainLayout/MainLayout';
 import SurveyCard from '../../components/feature/Survey/SurveyCard/SurveyCard';
 import Button from '../../components/common/Button/Button';
 import { FullPageLoading } from '../../components/common/Loading';
+import SurveyHeader from '../../components/common/SurveyHeader';
 import './Survey.css';
 import { getAllSurveys } from '../../services/surveyService';
 
@@ -72,11 +73,9 @@ const Survey = () => {
 
   return (
     <MainLayout>
-      <div className="survey-header">
-        <div className="page-title">
-          <h1>Surveys</h1>
-        </div>
-        
+      <SurveyHeader
+        title="Surveys"
+        rightContent={
         <Button 
           variant="primary" 
           icon={<AddIcon />}
@@ -84,7 +83,8 @@ const Survey = () => {
         >
           New Survey
         </Button>
-      </div>
+        }
+      />
       
       {renderContent()}
     </MainLayout>

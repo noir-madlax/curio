@@ -4,6 +4,18 @@
   width: 100%;
 }
 
+/* 2024-10-14: 统一所有选项的基础样式和颜色 */
+:root {
+  --option-bg-color: #F9FAFB;
+  --option-border-color: #E5E7EB;
+  --option-hover-bg-color: #F0F4FF;
+  --option-hover-border-color: #D1DDFF;
+  --option-selected-bg-color: #EBF5FF;
+  --option-selected-border-color: #93C5FD;
+  --option-selected-color: #2563EB;
+  --option-text-color: #4B5563;
+}
+
 /* 编辑/预览模式下选项列表 */
 .options-list-preview {
   display: flex;
@@ -18,10 +30,10 @@
   align-items: center;
   padding: 8px 12px;
   border-radius: 4px;
-  background-color: #F9FAFB;
-  border: 1px solid #E5E7EB;
+  background-color: var(--option-bg-color);
+  border: 1px solid var(--option-border-color);
   font-size: 14px;
-  color: #4B5563;
+  color: var(--option-text-color);
 }
 
 .option-number {
@@ -48,20 +60,20 @@
   align-items: center;
   padding: 10px 12px;
   border-radius: 4px;
-  background-color: #F9FAFB;
-  border: 1px solid #E5E7EB;
+  background-color: var(--option-bg-color);
+  border: 1px solid var(--option-border-color);
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .single-choice-option:hover:not(.disabled) {
-  background-color: #F3F4F6;
-  border-color: #D1D5DB;
+  background-color: var(--option-hover-bg-color);
+  border-color: var(--option-hover-border-color);
 }
 
 .single-choice-option.selected {
-  background-color: #EBF5FF;
-  border-color: #93C5FD;
+  background-color: var(--option-selected-bg-color);
+  border-color: var(--option-selected-border-color);
 }
 
 .single-choice-option.disabled {
@@ -82,7 +94,7 @@
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 2px solid #D1D5DB;
+  border: 2px solid var(--option-border-color);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -90,20 +102,21 @@
 }
 
 .radio-outer.selected {
-  border-color: #2563EB;
+  border-color: var(--option-selected-color);
+  background-color: var(--option-selected-bg-color);
 }
 
 .radio-inner {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background-color: #2563EB;
+  background-color: var(--option-selected-color);
 }
 
 .option-text {
   flex: 1;
   font-size: 14px;
-  color: #4B5563;
+  color: var(--option-text-color);
 }
 
 /* 多选题选项样式 */
@@ -118,20 +131,20 @@
   align-items: center;
   padding: 10px 12px;
   border-radius: 4px;
-  background-color: #F9FAFB;
-  border: 1px solid #E5E7EB;
+  background-color: var(--option-bg-color);
+  border: 1px solid var(--option-border-color);
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .multiple-choice-option:hover:not(.disabled) {
-  background-color: #F3F4F6;
-  border-color: #D1D5DB;
+  background-color: var(--option-hover-bg-color);
+  border-color: var(--option-hover-border-color);
 }
 
 .multiple-choice-option.selected {
-  background-color: #EBF5FF;
-  border-color: #93C5FD;
+  background-color: var(--option-selected-bg-color);
+  border-color: var(--option-selected-border-color);
 }
 
 .multiple-choice-option.disabled {
@@ -152,7 +165,7 @@
   width: 18px;
   height: 18px;
   border-radius: 4px;
-  border: 2px solid #D1D5DB;
+  border: 2px solid var(--option-border-color);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -160,8 +173,8 @@
 }
 
 .checkbox-outer.selected {
-  border-color: #2563EB;
-  background-color: #2563EB;
+  border-color: var(--option-selected-color);
+  background-color: var(--option-selected-color);
 }
 
 .checkbox-inner {
@@ -195,23 +208,19 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background-color: #F9FAFB;
-  border: 1px solid #E5E7EB;
+  background-color: var(--option-bg-color);
+  border: 1px solid var(--option-border-color);
   font-size: 14px;
-  color: #4B5563;
+  color: var(--option-text-color);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.nps-option:hover:not(.disabled) {
-  background-color: #F3F4F6;
-  border-color: #D1D5DB;
-}
 
 .nps-option.selected {
-  background-color: #2563EB;
+  background-color: var(--option-selected-color);
   color: white;
-  border-color: #2563EB;
+  border-color: var(--option-selected-color);
 }
 
 .nps-option.disabled {
@@ -248,44 +257,25 @@
 }
 
 .boolean-option {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 16px;
+  padding: 10px 20px;
+  background-color: var(--option-bg-color);
+  color: var(--option-text-color);
   border-radius: 4px;
-  background-color: #F9FAFB;
-  border: 1px solid #E5E7EB;
-  font-size: 14px;
-  color: #4B5563;
+  border: 1px solid var(--option-border-color);
   cursor: pointer;
-  transition: all 0.2s ease;
-  max-width: 150px;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
-.boolean-option:hover:not(.disabled) {
-  background-color: #F3F4F6;
-  border-color: #D1D5DB;
-}
 
 .boolean-option.selected {
-  background-color: #2563EB;
+  background-color: var(--option-selected-color);
+  border-color: var(--option-selected-color);
   color: white;
-  border-color: #2563EB;
 }
 
 .boolean-option.disabled {
   cursor: default;
   opacity: 0.7;
-}
-
-.boolean-options-preview {
-  padding: 8px 12px;
-  border-radius: 4px;
-  background-color: #F9FAFB;
-  border: 1px solid #E5E7EB;
-  font-size: 14px;
-  color: #4B5563;
 }
 
 /* 文本题样式 */
@@ -295,18 +285,20 @@
 
 .text-input {
   width: 100%;
-  min-height: 80px;
+  /* 2024-10-14: 减小文本框高度为2行 */
+  min-height: 4em;
+  height: 4em;
   padding: 12px;
   border-radius: 4px;
-  border: 1px solid #E5E7EB;
-  background-color: #F9FAFB;
+  border: 1px solid var(--option-border-color);
+  background-color: var(--option-bg-color);
   font-size: 14px;
   resize: vertical;
   transition: border-color 0.2s ease;
 }
 
 .text-input:focus {
-  border-color: #2563EB;
+  border-color: var(--option-selected-color);
   outline: none;
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
 }

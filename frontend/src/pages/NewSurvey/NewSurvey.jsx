@@ -6,6 +6,10 @@ import Button from '../../components/common/Button/Button';
 import Badge from '../../components/common/Badge/Badge';
 import { FullPageLoading, LoadingOverlay, LoadingIndicator } from '../../components/common/Loading';
 import QuestionOptions from '../../components/common/QuestionOptions/QuestionOptions';
+// 2024-10-14: 导入新的公共组件
+import SurveyHeader from '../../components/common/SurveyHeader';
+import SurveyDescription from '../../components/common/SurveyDescription';
+import PublishButton from '../../components/common/PublishButton/PublishButton';
 import './NewSurvey.css';
 import { 
   createSurvey, 
@@ -58,11 +62,12 @@ const QUESTION_TYPE_NAMES = {
 
 // 2024-08-07T17:45:00Z 新增：自定义图标组件，可以动态设置颜色
 // 2024-08-07T17:45:00Z Added: Custom icon component with dynamic color setting
-const PublishIcon = ({ color = "#252326" }) => (
-  <svg width="18" height="19" viewBox="0 0 18 19" fill="none" xmlns="http://www.w3.org/2000/svg" className="button-icon">
-    <path d="M13.2946 3.7081L2.35237 5.54223C2.32466 5.54687 2.29868 5.55878 2.27709 5.57675C2.25549 5.59472 2.23905 5.61809 2.22945 5.64449C2.21985 5.67089 2.21743 5.69937 2.22244 5.72701C2.22745 5.75465 2.2397 5.78047 2.25795 5.80183L3.61535 7.38993C3.65802 7.43988 3.71515 7.47535 3.77884 7.49145C3.84253 7.50755 3.90965 7.50349 3.97094 7.47982L13.3364 3.86043C13.3548 3.8534 13.3699 3.83978 13.3788 3.82221C13.3878 3.80464 13.3898 3.78438 13.3846 3.76538C13.3794 3.74637 13.3673 3.72998 13.3507 3.71939C13.3341 3.7088 13.3141 3.70478 13.2947 3.7081H13.2946ZM11.2488 15.3536L15.7123 4.32646C15.724 4.29745 15.7269 4.26561 15.7206 4.23496C15.7143 4.20431 15.6991 4.17621 15.6768 4.1542C15.6546 4.13219 15.6263 4.11724 15.5956 4.11125C15.5649 4.10525 15.5331 4.10847 15.5042 4.1205L5.11047 8.45449C5.07528 8.46915 5.04413 8.49205 5.01963 8.52126C4.99514 8.55047 4.97802 8.58514 4.96971 8.62234C4.96141 8.65955 4.96216 8.69821 4.97191 8.73506C4.98166 8.77191 5.00012 8.80589 5.02573 8.83412L10.9842 15.4007C11.0023 15.4206 11.0251 15.4355 11.0505 15.4442C11.0759 15.4529 11.1031 15.455 11.1296 15.4503C11.156 15.4455 11.1808 15.4342 11.2017 15.4173C11.2225 15.4004 11.2388 15.3784 11.2488 15.3536H11.2488ZM4.68323 15.2817C4.41031 15.4349 4.06567 15.3734 4.00823 15.3663C3.5725 15.3128 3.31124 14.9155 3.3648 14.4797L3.05086 8.72717L1.43823 6.79926C0.843835 6.16948 0.87446 5.18021 1.50662 4.58962C1.74982 4.36265 2.05873 4.21865 2.38894 4.17833L15.2466 2.42497C16.1077 2.31945 16.8926 2.92852 16.9997 3.78545C17.0364 4.079 16.9886 4.37684 16.862 4.64429L12.5082 15.822C12.1385 16.6026 11.2023 16.9363 10.4173 16.5675C10.2388 16.4836 10.0776 16.3669 9.94214 16.2235L7.08741 13.0808C7.07162 13.0919 6.27023 13.8256 4.68323 15.2818V15.2817ZM4.28623 10.2378L4.47688 13.5419C4.47863 13.5724 4.48916 13.6017 4.50719 13.6264C4.52521 13.651 4.54998 13.67 4.5785 13.6809C4.60703 13.6918 4.6381 13.6943 4.668 13.688C4.69789 13.6817 4.72533 13.6669 4.74702 13.6454L6.06831 12.3342C6.12519 12.2778 6.15862 12.2019 6.16188 12.1218C6.16515 12.0418 6.13802 11.9635 6.08593 11.9026L4.56526 10.1255C4.54367 10.1002 4.51469 10.0824 4.48242 10.0745C4.45014 10.0666 4.4162 10.069 4.38537 10.0814C4.35454 10.0938 4.32839 10.1156 4.3106 10.1437C4.29282 10.1717 4.28429 10.2047 4.28623 10.2378Z" fill={color}/>
-  </svg>
-);
+// 2024-11-02：删除，使用公共的PublishButton组件
+// const PublishIcon = ({ color = "#252326" }) => (
+//   <svg width="18" height="19" viewBox="0 0 18 19" fill="none" xmlns="http://www.w3.org/2000/svg" className="button-icon">
+//     <path d="M13.2946 3.7081L2.35237 5.54223C2.32466 5.54687 2.29868 5.55878 2.27709 5.57675C2.25549 5.59472 2.23905 5.61809 2.22945 5.64449C2.21985 5.67089 2.21743 5.69937 2.22244 5.72701C2.22745 5.75465 2.2397 5.78047 2.25795 5.80183L3.61535 7.38993C3.65802 7.43988 3.71515 7.47535 3.77884 7.49145C3.84253 7.50755 3.90965 7.50349 3.97094 7.47982L13.3364 3.86043C13.3548 3.8534 13.3699 3.83978 13.3788 3.82221C13.3878 3.80464 13.3898 3.78438 13.3846 3.76538C13.3794 3.74637 13.3673 3.72998 13.3507 3.71939C13.3341 3.7088 13.3141 3.70478 13.2947 3.7081H13.2946ZM11.2488 15.3536L15.7123 4.32646C15.724 4.29745 15.7269 4.26561 15.7206 4.23496C15.7143 4.20431 15.6991 4.17621 15.6768 4.1542C15.6546 4.13219 15.6263 4.11724 15.5956 4.11125C15.5649 4.10525 15.5331 4.10847 15.5042 4.1205L5.11047 8.45449C5.07528 8.46915 5.04413 8.49205 5.01963 8.52126C4.99514 8.55047 4.97802 8.58514 4.96971 8.62234C4.96141 8.65955 4.96216 8.69821 4.97191 8.73506C4.98166 8.77191 5.00012 8.80589 5.02573 8.83412L10.9842 15.4007C11.0023 15.4206 11.0251 15.4355 11.0505 15.4442C11.0759 15.4529 11.1031 15.455 11.1296 15.4503C11.156 15.4455 11.1808 15.4342 11.2017 15.4173C11.2225 15.4004 11.2388 15.3784 11.2488 15.3536H11.2488ZM4.68323 15.2817C4.41031 15.4349 4.06567 15.3734 4.00823 15.3663C3.5725 15.3128 3.31124 14.9155 3.3648 14.4797L3.05086 8.72717L1.43823 6.79926C0.843835 6.16948 0.87446 5.18021 1.50662 4.58962C1.74982 4.36265 2.05873 4.21865 2.38894 4.17833L15.2466 2.42497C16.1077 2.31945 16.8926 2.92852 16.9997 3.78545C17.0364 4.079 16.9886 4.37684 16.862 4.64429L12.5082 15.822C12.1385 16.6026 11.2023 16.9363 10.4173 16.5675C10.2388 16.4836 10.0776 16.3669 9.94214 16.2235L7.08741 13.0808C7.07162 13.0919 6.27023 13.8256 4.68323 15.2818V15.2817ZM4.28623 10.2378L4.47688 13.5419C4.47863 13.5724 4.48916 13.6017 4.50719 13.6264C4.52521 13.651 4.54998 13.67 4.5785 13.6809C4.60703 13.6918 4.6381 13.6943 4.668 13.688C4.69789 13.6817 4.72533 13.6669 4.74702 13.6454L6.06831 12.3342C6.12519 12.2778 6.15862 12.2019 6.16188 12.1218C6.16515 12.0418 6.13802 11.9635 6.08593 11.9026L4.56526 10.1255C4.54367 10.1002 4.51469 10.0824 4.48242 10.0745C4.45014 10.0666 4.4162 10.069 4.38537 10.0814C4.35454 10.0938 4.32839 10.1156 4.3106 10.1437C4.29282 10.1717 4.28429 10.2047 4.28623 10.2378Z" fill={color}/>
+//   </svg>
+// );
 
 // 2024-09-27T16:00:00Z 新增：选项管理组件
 // 2024-09-27T16:00:00Z Added: Options management component
@@ -110,11 +115,15 @@ const OptionsManager = ({
                           <div className="option-number">{index + 1}</div>
                           <input
                             type="text"
-                            value={option.text}
+                            value={option.text || ''}
                             onChange={(e) => onUpdateOption(index, e.target.value)}
                             placeholder={`Option ${index + 1}`}
                             className="option-input"
                             disabled={disabled}
+                            style={{ 
+                              fontStyle: option.text ? 'normal' : 'italic',
+                              color: option.text ? '#333' : '#999'
+                            }}
                           />
                           <button 
                             className="delete-option-button"
@@ -160,6 +169,10 @@ const OptionsManager = ({
             className="nps-label-input"
             placeholder="Label for 0"
             disabled={disabled}
+            style={{ 
+              fontStyle: npsLabels[0] ? 'normal' : 'italic',
+              color: npsLabels[0] ? '#333' : '#999'
+            }}
           />
         </div>
         <div className="nps-label-item">
@@ -171,6 +184,10 @@ const OptionsManager = ({
             className="nps-label-input"
             placeholder="Label for 10"
             disabled={disabled}
+            style={{ 
+              fontStyle: npsLabels[10] ? 'normal' : 'italic',
+              color: npsLabels[10] ? '#333' : '#999'
+            }}
           />
         </div>
         <div className="nps-scale-preview">
@@ -196,6 +213,10 @@ const OptionsManager = ({
             className="boolean-label-input"
             placeholder="Label for Yes"
             disabled={disabled}
+            style={{ 
+              fontStyle: booleanLabels.true ? 'normal' : 'italic',
+              color: booleanLabels.true ? '#333' : '#999'
+            }}
           />
         </div>
         <div className="boolean-label-item">
@@ -207,6 +228,10 @@ const OptionsManager = ({
             className="boolean-label-input"
             placeholder="Label for No"
             disabled={disabled}
+            style={{ 
+              fontStyle: booleanLabels.false ? 'normal' : 'italic',
+              color: booleanLabels.false ? '#333' : '#999'
+            }}
           />
         </div>
       </div>
@@ -224,7 +249,7 @@ const NewSurvey = ({ viewMode = false }) => {
   const isViewing = !!id && viewMode;
   
   const [activeTab, setActiveTab] = useState('details');
-  const [surveyTitle, setSurveyTitle] = useState('New Survey');
+  const [surveyTitle, setSurveyTitle] = useState('');
   const [surveyDescription, setSurveyDescription] = useState('');
   const [surveyThanksMessage, setSurveyThanksMessage] = useState('');
   const [questions, setQuestions] = useState([]);
@@ -490,7 +515,8 @@ const NewSurvey = ({ viewMode = false }) => {
         // Generate a unique link based on ID, can add random characters to increase security
         const baseUrl = window.location.origin; // Get the current website base URL
         const randomStr = Math.random().toString(36).substring(2, 8);
-        const surveyLink = `${baseUrl}/survey/${id}/respond?t=${randomStr}`;
+        // 修正URL格式，使用正确的路径格式
+        const surveyLink = `${baseUrl}/surveys/respond/${id}?t=${randomStr}`;
         
         // Generate survey link
         await updateSurvey(id, {
@@ -554,6 +580,12 @@ const NewSurvey = ({ viewMode = false }) => {
   
   const handleAddQuestion = async () => {
     if (!questionText.trim()) return;
+    
+    // 2024-11-03: 添加验证，确保所有选项都有内容
+    if (!allOptionsHaveText()) {
+      alert('Please fill in all option fields');
+      return;
+    }
     
     // 验证问题类型是否需要选项且已提供足够选项
     // Verify question type requires options and enough options are provided
@@ -875,16 +907,16 @@ const NewSurvey = ({ viewMode = false }) => {
   const handleEditQuestion = async (id) => {
     try {
       setIsLoading(true);
-      const questionToEdit = questions.find(q => q.id === id);
+    const questionToEdit = questions.find(q => q.id === id);
       
-      if (questionToEdit) {
+    if (questionToEdit) {
         // 2024-05-09: 先添加乐观更新，将问题标记为正在编辑
         const updatedQuestions = questions.map(q => 
           q.id === id ? { ...q, isEditing: true } : q
         );
         setQuestions(updatedQuestions);
         
-        setQuestionText(questionToEdit.text);
+      setQuestionText(questionToEdit.text);
         // Set the correct question type when editing
         setSelectedQuestionType(questionToEdit.type || QUESTION_TYPES.TEXT);
         
@@ -1093,7 +1125,7 @@ const NewSurvey = ({ viewMode = false }) => {
     // Generate new option
     const newOption = {
       id: `option-${Date.now()}`,
-      text: `Option ${questionOptions.length + 1}`
+      text: ``  // 将默认值改为空字符串
     };
     
     // 添加到选项列表
@@ -1184,8 +1216,8 @@ const NewSurvey = ({ viewMode = false }) => {
       questionOptions.length === 0
     ) {
       setQuestionOptions([
-        { id: `option-${Date.now()}-1`, text: 'Option 1' },
-        { id: `option-${Date.now()}-2`, text: 'Option 2' }
+        { id: `option-${Date.now()}-1`, text: '' }, // 初始选项为空字符串
+        { id: `option-${Date.now()}-2`, text: '' }  // 初始选项为空字符串
       ]);
       
       // 2024-05-09: 当选择需要选项的类型时，自动滚动到选项区域
@@ -1284,6 +1316,18 @@ const NewSurvey = ({ viewMode = false }) => {
     return [];
   };
   
+  // 2024-11-03: 添加方法，检查所有选项是否都已填写内容
+  const allOptionsHaveText = () => {
+    if (selectedQuestionType === QUESTION_TYPES.SINGLE_CHOICE || 
+        selectedQuestionType === QUESTION_TYPES.MULTIPLE_CHOICE) {
+      // 确保所有选项都有文本内容
+      return questionOptions.length >= 2 && questionOptions.every(option => option.text && option.text.trim() !== '');
+    }
+    
+    // 非单选或多选题不需要检查选项
+    return true;
+  };
+
   if (error) {
     return (
       <MainLayout>
@@ -1309,20 +1353,16 @@ const NewSurvey = ({ viewMode = false }) => {
   return (
     <MainLayout>
       <div className="new-survey-container">
-        <div className="new-survey-header">
-          <div className="header-title">
-            <h1>
-              {isViewing 
+        {/* 2024-10-14: 使用新的SurveyHeader组件替换原header */}
+        <SurveyHeader
+          title={isViewing 
                 ? surveyTitle
                 : isEditing 
                   ? 'Edit Survey' 
                   : 'Create New Survey'
               }
-            </h1>
-            {(isViewing && surveyStatus === 'published') && (
-              <Badge status="Published" />
-            )}
-          </div>
+          leftContent={(isViewing && surveyStatus === 'published') && <Badge status="Published" />}
+          rightContent={
           <div className="header-actions">
             {!isViewing && (
               <Button 
@@ -1347,26 +1387,22 @@ const NewSurvey = ({ viewMode = false }) => {
             )}
             
             {(isViewing || surveyStatus === 'published') ? (
-              <Button 
-                variant="success" 
-                icon={<PublishIcon color="#FFFFFF" />}
-                onClick={handlePublishedClick}
-                disabled={isLoading}
-              >
-                Share Survey
-              </Button>
+              <PublishButton 
+                isPublished={true}
+                onPublish={handlePublishedClick}
+                isLoading={isLoading}
+              />
             ) : (
-              <Button 
-                variant={questions.length > 0 ? "success" : "disabled"} 
-                icon={<PublishIcon color={questions.length > 0 ? "#FFFFFF" : "#999999"} />}
-                onClick={handlePublish}
+              <PublishButton 
+                isPublished={false}
+                onPublish={handlePublish}
                 disabled={isLoading || questions.length === 0}
-              >
-                Publish
-              </Button>
+                isLoading={isLoading}
+              />
             )}
           </div>
-        </div>
+          }
+        />
         
         {isLoading && (
           <LoadingOverlay message="Processing..." />
@@ -1391,14 +1427,8 @@ const NewSurvey = ({ viewMode = false }) => {
         
           {isViewing ? (
           <div className="survey-combined-content">
-            <div className="survey-description-section">
-              {surveyDescription && (
-                <>
-                  {/* 2023-10-31: 移除Description标签，直接显示问卷描述 */}
-                  <p className="survey-description">{surveyDescription}</p>
-                </>
-              )}
-            </div>
+            {/* 2024-10-14: 使用新的SurveyDescription组件替换原有的描述 */}
+            <SurveyDescription description={surveyDescription} />
             
             <div className="survey-questions-section">
               <h2 className="section-title">Questions</h2>
@@ -1447,8 +1477,8 @@ const NewSurvey = ({ viewMode = false }) => {
                             question={question} 
                             mode="edit" 
                           />
-                        </div>
-                      </div>
+                                    </div>
+                                </div>
                     ))}
                   </div>
                 )}
@@ -1465,16 +1495,20 @@ const NewSurvey = ({ viewMode = false }) => {
                     <Badge type="required">Required</Badge>
                   </label>
                   <div className="label-with-badge">
-                    <input 
-                      type="text" 
-                      id="surveyTitle" 
-                      value={surveyTitle}
-                      onChange={(e) => setSurveyTitle(e.target.value)}
-                      placeholder="Enter survey title"
-                      disabled={isLoading}
-                      className="filled-input"
-                      style={{ fontWeight: '500', color: '#333' }}
-                    />
+                  <input 
+                    type="text" 
+                    id="surveyTitle" 
+                    value={surveyTitle}
+                    onChange={(e) => setSurveyTitle(e.target.value)}
+                    placeholder="New Survey"
+                    disabled={isLoading}
+                    className="empty-input"
+                    style={{ 
+                      fontStyle: surveyTitle ? 'normal' : 'italic',
+                      fontWeight: surveyTitle ? '500' : 'normal', 
+                      color: surveyTitle ? '#333' : '#999' 
+                    }}
+                  />
                   </div>
                 </div>
                 
@@ -1484,15 +1518,15 @@ const NewSurvey = ({ viewMode = false }) => {
                     <Badge type="required">Required</Badge>
                   </label>
                   <div className="label-with-badge">
-                    <textarea 
-                      id="surveyDescription" 
-                      value={surveyDescription}
-                      onChange={(e) => setSurveyDescription(e.target.value)}
-                      placeholder="Welcome participants and describe what this survey is about"
-                      rows={2}
-                      disabled={isLoading}
-                      className="empty-input"
-                      style={{ fontStyle: 'italic', color: surveyDescription ? '#333' : '#999' }}
+                  <textarea 
+                    id="surveyDescription" 
+                    value={surveyDescription}
+                    onChange={(e) => setSurveyDescription(e.target.value)}
+                    placeholder="Welcome participants and describe what this survey is about"
+                    rows={2}
+                    disabled={isLoading}
+                    className="empty-input"
+                    style={{ fontStyle: 'italic', color: surveyDescription ? '#333' : '#999' }}
                     />
                   </div>
                 </div>
@@ -1604,21 +1638,22 @@ const NewSurvey = ({ viewMode = false }) => {
                         Cancel
                       </Button>
                       <Button 
-                            variant={!questionText.trim() ? "disabled" : "primary"}
+                            variant={!questionText.trim() || !allOptionsHaveText() ? "disabled" : "primary"}
                             onClick={() => {
-                              if (questionText.trim()) {
+                              if (questionText.trim() && allOptionsHaveText()) {
                                 handleAddQuestion();
                               }
                             }}
                             disabled={
                               isLoading || 
-                              !questionText.trim() ||
+                              !questionText.trim() || 
+                              !allOptionsHaveText() ||
                               ((selectedQuestionType === QUESTION_TYPES.SINGLE_CHOICE || 
                                 selectedQuestionType === QUESTION_TYPES.MULTIPLE_CHOICE) && 
                                 questionOptions.length < 2)
                             }
                           >
-                            Add Question
+                            {editingQuestionId ? 'Update Question' : 'Add Question'}
                       </Button>
                     </div>
                   </div>
@@ -1712,7 +1747,7 @@ const NewSurvey = ({ viewMode = false }) => {
                                         question={question} 
                                         mode="edit" 
                                       />
-                                    </div>
+                                                </div>
                                   </div>
                                 )}
                               </Draggable>
@@ -1790,15 +1825,16 @@ const NewSurvey = ({ viewMode = false }) => {
                               Cancel
                             </Button>
                             <Button 
-                            variant={!questionText.trim() ? "disabled" : "primary"}
+                            variant={!questionText.trim() || !allOptionsHaveText() ? "disabled" : "primary"}
                             onClick={() => {
-                              if (questionText.trim()) {
+                              if (questionText.trim() && allOptionsHaveText()) {
                                 handleAddQuestion();
                               }
                             }}
                             disabled={
                               isLoading || 
-                              !questionText.trim() ||
+                              !questionText.trim() || 
+                              !allOptionsHaveText() ||
                               ((selectedQuestionType === QUESTION_TYPES.SINGLE_CHOICE || 
                                 selectedQuestionType === QUESTION_TYPES.MULTIPLE_CHOICE) && 
                                 questionOptions.length < 2)

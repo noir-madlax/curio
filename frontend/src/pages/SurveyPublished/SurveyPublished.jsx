@@ -50,7 +50,7 @@ const SurveyPublished = () => {
   
   // 从survey对象获取数据，如果尚未加载则使用默认值
   const surveyTitle = survey?.title || "Loading...";
-  const surveyLink = survey?.surveyLink || `${window.location.origin}/survey/${surveyId}/respond`;
+  const surveyLink = survey?.surveyLink || `${window.location.origin}/surveys/respond/${surveyId}?t=${Math.random().toString(36).substring(2, 8)}`;
   const responsesCount = 0; // 初始回复数为0
   
   const handleCopyLink = () => {

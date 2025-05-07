@@ -1,3 +1,4 @@
+/* 2024-10-14: 已移除页头和描述样式，改用公共组件 */
 .survey-view-container {
   display: flex;
   flex-direction: column;
@@ -15,25 +16,6 @@
   width: 100%;
 }
 
-.header-title {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.header-title h1 {
-  font-size: 28px;
-  font-weight: 600;
-  color: #232325;
-  margin: 0;
-  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-.header-actions {
-  display: flex;
-  gap: 12px;
-}
-
 .button-icon {
   width: 16px;
   height: 16px;
@@ -45,37 +27,6 @@
   flex-direction: column;
   width: 100%;
   gap: 16px;
-}
-
-.survey-description-section {
-  margin-bottom: 0;
-}
-
-.description-label {
-  font-size: 16px;
-  font-weight: 500;
-  color: #333333;
-  margin-right: 8px;
-  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-.survey-description {
-  font-size: 16px;
-  font-weight: 400;
-  color: #666666;
-  line-height: 1.5;
-  margin: 0;
-  padding: 0;
-  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  font-style: italic;
-}
-
-.survey-description-text {
-  font-size: 16px;
-  line-height: 1.6;
-  color: #4A5568;
-  margin: 0;
-  font-weight: 400;
 }
 
 .survey-questions-section {
@@ -133,6 +84,7 @@
   border: 1px solid #E5E5E5;
   background-color: #FFFFFF;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin-bottom: 16px;
 }
 
 .question-header {
@@ -146,10 +98,18 @@
 }
 
 .question-number {
-  display: flex;
-  align-items: center;
-  color: #6B7280;
-  margin-right: 8px;
+  display: inline-block !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: #6B7280 !important;
+  margin-right: 8px !important;
+  flex-shrink: 0 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-width: 24px !important;
+  text-align: left !important;
+  position: relative !important;
+  z-index: 1 !important;
 }
 
 .question-number-icon {
@@ -500,6 +460,17 @@
   cursor: not-allowed;
 }
 
+/* 2024-10-14: 添加全宽提交按钮样式 */
+.submit-button.full-width {
+  width: 100%;
+}
+
+/* 2024-10-14: 改进提交按钮容器样式 */
+.submit-container {
+  margin-top: 24px;
+  width: 100%;
+}
+
 /* 响应式布局 */
 @media (max-width: 768px) {
   .survey-preview-header {
@@ -567,19 +538,27 @@
 }
 
 .question-title-row {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  position: relative;
-  margin-bottom: 0;
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  position: relative !important;
+  margin-bottom: 12px !important;
+  flex-wrap: nowrap !important;
 }
 
 .question-number {
-  display: inline-block;
-  font-size: 16px;
-  font-weight: 600;
-  color: #6B7280;
-  margin-right: 8px;
+  display: inline-block !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: #6B7280 !important;
+  margin-right: 8px !important;
+  flex-shrink: 0 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-width: 24px !important;
+  text-align: left !important;
+  position: relative !important;
+  z-index: 1 !important;
 }
 
 .question-text {
@@ -723,4 +702,49 @@
 .question-content {
   padding-top: 0;
   margin-top: 8px;
+}
+
+/* 页面头部样式 */
+.survey-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+/* 2024-10-14: 添加header-left样式，使标题和状态标签在同一行水平排列 */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.survey-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #252326;
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* 问卷描述统一样式 
+ * 2024-10-14: 创建统一的问卷描述样式
+ */
+.survey-description {
+  background-color: #ebf5eb;
+  border: 1px solid #c8e6c9;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  font-size: 16px;
+  color: #333333;
+  line-height: 1.5;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  /* 2024-05-10: 修改描述文本样式为普通文本，不再使用斜体 */
+  /* font-style: italic; */
 }

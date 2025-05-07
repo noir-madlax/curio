@@ -1,3 +1,4 @@
+/* 2024-10-14: 部分header和description样式已移至公共组件 */
 .new-survey-container {
   display: flex;
   flex-direction: column;

@@ -1,0 +1,37 @@
+/* 问卷描述统一样式 
+ * 2024-10-14: 创建统一的问卷描述样式
+ */
+.survey-description-container {
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+.description-label {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333333;
+  margin-right: 8px;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.survey-description {
+  font-size: 16px;
+  font-weight: 400;
+  color: #666666;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-style: italic;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .survey-description-container {
+    margin-bottom: 16px;
+  }
+  
+  .survey-description {
+    font-size: 14px;
+  }
+} 

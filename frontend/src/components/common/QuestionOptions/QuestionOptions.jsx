@@ -22,6 +22,7 @@ const QUESTION_TYPE_NAMES = {
 /**
  * 通用问题选项显示组件
  * 2024-05-09: 创建通用组件统一问题选项的显示样式
+ * 2024-10-14: 统一单选和多选的选中样式，保持形状差异
  * @param {Object} question - 问题对象
  * @param {string} mode - 显示模式: 'preview', 'respond', 'edit', 'view'
  * @param {*} currentAnswer - 当前问题的回答值
@@ -117,9 +118,9 @@ const QuestionOptions = ({
                     }
                   }}
                 >
-                  <div className="option-checkbox">
-                    <div className={`checkbox-outer ${selectedOptions.includes(option.id) ? 'selected' : ''}`}>
-                      {selectedOptions.includes(option.id) && <div className="checkbox-inner">✓</div>}
+                  <div className="option-radio">
+                    <div className={`radio-outer ${selectedOptions.includes(option.id) ? 'selected' : ''}`}>
+                      {selectedOptions.includes(option.id) && <div className="radio-inner"></div>}
                     </div>
                   </div>
                   <span className="option-text">{option.text}</span>
@@ -186,6 +187,21 @@ const QuestionOptions = ({
       );
       
     case QUESTION_TYPES.BOOLEAN:
+      // 2024-10-14: 增加调试代码，确保布尔值类型正确
+      const isYesSelected = currentAnswer === true;
+      const isNoSelected = currentAnswer === false;
+      
+      // 调试日志
+      if (isInteractive) {
+        console.log('布尔题状态:', {
+          questionId: question.id,
+          currentAnswer: currentAnswer,
+          type: typeof currentAnswer,
+          isYesSelected,
+          isNoSelected
+        });
+      }
+      
       return (
         <div className="question-options-display">
           {isEditView ? (
@@ -206,17 +222,23 @@ const QuestionOptions = ({
             <div className="boolean-container">
               <div className="boolean-options">
                 <div 
-                  className={`boolean-option ${currentAnswer === true ? 'selected' : ''} ${!isInteractive ? 'disabled' : ''}`}
+                  className={`boolean-option ${isYesSelected ? 'selected' : ''} ${!isInteractive ? 'disabled' : ''}`}
                   onClick={() => {
-                    if (isInteractive) handleAnswerChange(question.id, true);
+                    if (isInteractive) {
+                      console.log('点击Yes选项');
+                      handleAnswerChange(question.id, true);
+                    }
                   }}
                 >
                   {question.options && question.options.length > 0 ? question.options[0]?.text : 'Yes'}
                 </div>
                 <div 
-                  className={`boolean-option ${currentAnswer === false ? 'selected' : ''} ${!isInteractive ? 'disabled' : ''}`}
+                  className={`boolean-option ${isNoSelected ? 'selected' : ''} ${!isInteractive ? 'disabled' : ''}`}
                   onClick={() => {
-                    if (isInteractive) handleAnswerChange(question.id, false);
+                    if (isInteractive) {
+                      console.log('点击No选项');
+                      handleAnswerChange(question.id, false);
+                    }
                   }}
                 >
                   {question.options && question.options.length > 1 ? question.options[1]?.text : 'No'}

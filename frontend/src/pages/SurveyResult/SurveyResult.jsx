@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '../../components/layout/MainLayout/MainLayout';
 import Badge from '../../components/common/Badge/Badge';
 import { FullPageLoading } from '../../components/common/Loading';
+// 2024-10-14: 导入公共组件
+import SurveyHeader from '../../components/common/SurveyHeader';
 import './SurveyResult.css';
 
 // 引入服务函数
@@ -143,15 +145,11 @@ const SurveyResult = () => {
   return (
     <MainLayout>
       <div className="survey-result-container">
-        {/* 标题区域 */}
-        <div className="survey-result-header">
-          <div className="survey-title-info">
-            <div className="title-badge-container">
-              <h1>{survey.title}</h1>
-              <Badge status={survey.status} />
-            </div>
-          </div>
-        </div>
+        {/* 2024-10-14: 使用SurveyHeader公共组件替换原有的header结构 */}
+        <SurveyHeader
+          title={survey.title}
+          leftContent={<Badge status={survey.status} />}
+        />
         
         {/* 统计卡片区域 */}
         <div className="statistics-cards">

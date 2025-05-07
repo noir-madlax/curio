@@ -43,18 +43,80 @@ export const getAllSurveys = async () => {
       throw new Error(error.message || 'Failed to fetch surveys from database');
     }
 
+    // 2024-11-03: 获取每个问卷的问题数量
+    const { data: questionsData, error: questionsError } = await supabase
+      .from('cu_survey_questions')
+      .select('survey_id');
+      
+    if (questionsError) {
+      console.error('Supabase error fetching survey questions:', questionsError);
+      // 不阻止整个过程，继续处理问卷数据
+    }
+    
+    // 计算每个问卷的问题数量
+    const questionCountMap = {};
+    if (questionsData) {
+      questionsData.forEach(question => {
+        const surveyId = question.survey_id;
+        if (!questionCountMap[surveyId]) {
+          questionCountMap[surveyId] = 0;
+        }
+        questionCountMap[surveyId]++;
+      });
+    }
+
     // 将数据库数据映射到前端需要的格式
     // 2024-07-29T10:00:00Z 新增：数据映射逻辑
     // 2024-07-29T11:45:00Z 修改：确保映射基于实际返回的 data
-    return data.map(survey => ({
+    const mappedSurveys = data.map(survey => ({
       id: survey.id,
       title: survey.title ? survey.title.trim() : 'Untitled Survey', // 2024-07-29T11:45:00Z 修改：处理可能的 null title 并清理换行符
       status: survey.status ? survey.status.charAt(0).toUpperCase() + survey.status.slice(1) : 'Draft', // 2024-07-29T11:45:00Z 修改：处理可能的 null status 并首字母大写
       updatedAt: survey.updated_at ? `Updated ${timeAgo(survey.updated_at)}` : 'Updated unknown', // 2024-07-29T11:45:00Z 修改：格式化更新时间，处理 null
-      responses: 0, // 暂时设为 0
-      completionRate: 0, // 暂时设为 0
+      responses: 0, // 暂时设为 0，将被更新
+      completionRate: 0, // 暂时设为 0，将被更新
       surveyLink: survey.SurveyLink || null, // 2024-08-07T09:30:00Z 新增：返回问卷链接
+      questionCount: questionCountMap[survey.id] || 0 // 2024-11-03: 添加问题数量字段
     }));
+
+    // 2024-10-20: 增强功能：为所有问卷获取真实的响应数据和完成率
+    // 获取所有问卷的响应记录
+    const { data: responsesData, error: responsesError } = await supabase
+      .from('cu_survey_responses')
+      .select('survey_id, status');
+      
+    if (responsesError) {
+      console.error('Supabase error fetching survey responses:', responsesError);
+      // 返回基本问卷数据，不阻止整个过程
+      return mappedSurveys;
+    }
+    
+    // 处理响应数据，计算每个问卷的响应数量和完成率
+    const surveyStats = {};
+    responsesData.forEach(response => {
+      const surveyId = response.survey_id;
+      if (!surveyStats[surveyId]) {
+        surveyStats[surveyId] = { total: 0, completed: 0 };
+      }
+      surveyStats[surveyId].total++;
+      if (response.status === 'completed') {
+        surveyStats[surveyId].completed++;
+      }
+    });
+    
+    // 更新问卷数据
+    return mappedSurveys.map(survey => {
+      const stats = surveyStats[survey.id] || { total: 0, completed: 0 };
+      const completionRate = stats.total > 0 
+        ? Math.round((stats.completed / stats.total) * 100) 
+        : 0;
+      
+      return {
+        ...survey,
+        responses: stats.total,
+        completionRate: completionRate
+      };
+    });
 
   } catch (error) {
     console.error('Error in getAllSurveys service:', error);
@@ -110,6 +172,11 @@ export const createSurvey = async (surveyData) => {
     if (surveyData.surveyLink) {
       newSurveyData.SurveyLink = surveyData.surveyLink;
     }
+    
+    // 2024-05-14 新增：如果包含thanksMessage，添加到新问卷数据中
+    if (surveyData.thanksMessage !== undefined) {
+      newSurveyData.thanks_message = surveyData.thanksMessage;
+    }
 
     // 2024-07-29T11:45:00Z 修改：执行 Supabase 插入操作，并使用 .select() 获取返回的数据
     const { data, error } = await supabase
@@ -135,6 +202,7 @@ export const createSurvey = async (surveyData) => {
          responses: 0, // 新问卷响应为 0
          completionRate: 0, // 新问卷完成率为 0
          surveyLink: createdSurvey.SurveyLink || null, // 2024-08-06 新增：返回问卷链接
+         thanksMessage: createdSurvey.thanks_message || '', // 2024-05-14: 新增返回感谢信息字段
       };
     } else {
       // 如果没有返回数据（理论上 .select() 应该返回），抛出错误
@@ -171,6 +239,7 @@ export const getSurveyById = async (id) => {
       updatedAt: data.updated_at ? `Updated ${timeAgo(data.updated_at)}` : 'Updated unknown',
       createdAt: data.created_at || new Date().toISOString(),
       surveyLink: data.SurveyLink || null, // 2024-08-06 新增：返回问卷链接
+      thanksMessage: data.thanks_message || '', // 2024-05-14: 新增返回感谢信息字段
     };
   } catch (error) {
     console.error(`Error in getSurveyById service for ID ${id}:`, error);
@@ -198,6 +267,11 @@ export const updateSurvey = async (id, surveyData) => {
     if (surveyData.surveyLink) {
       updateData.SurveyLink = surveyData.surveyLink;
     }
+    
+    // 2024-05-14 新增：如果包含thanksMessage，则更新感谢消息
+    if (surveyData.thanksMessage !== undefined) {
+      updateData.thanks_message = surveyData.thanksMessage;
+    }
 
     const { data, error } = await supabase
       .from('cu_survey')
@@ -219,6 +293,7 @@ export const updateSurvey = async (id, surveyData) => {
         status: updatedSurvey.status ? updatedSurvey.status.charAt(0).toUpperCase() + updatedSurvey.status.slice(1) : 'Draft',
         updatedAt: `Updated ${timeAgo(updatedSurvey.updated_at)}`,
         surveyLink: updatedSurvey.SurveyLink || null,  // 2024-08-06 新增：返回问卷链接
+        thanksMessage: updatedSurvey.thanks_message || '', // 2024-05-14: 新增返回感谢信息字段
       };
     } else {
       throw new Error('Failed to retrieve updated survey data');
@@ -478,6 +553,8 @@ export const reorderQuestions = async (surveyId, newOrder) => {
 // export const sendSurveyMessage = async (responseId, message) => { ... }
 
 // 2024-09-24: 创建新的问卷响应记录
+// 2024-05-14T15:30:00Z 修改：确保返回的ID是数字类型
+// 2024-10-21T12:00:00Z 修改：统一生成匿名标识符，不依赖URL参数
 export const createSurveyResponse = async (surveyId, respondentIdentifier = null) => {
   console.log(`【createSurveyResponse】开始创建问卷响应，Survey ID: ${surveyId}`, {
     surveyId: surveyId,
@@ -492,13 +569,19 @@ export const createSurveyResponse = async (surveyId, respondentIdentifier = null
       throw new Error('Survey ID is required to create a response');
     }
     
+    // 确保surveyId是数字类型
+    const numericSurveyId = Number(surveyId);
+    if (isNaN(numericSurveyId)) {
+      throw new Error(`Invalid survey ID: ${surveyId}. Must be a number.`);
+    }
+    
     // 验证surveyId是否有效
     try {
-      console.log(`【createSurveyResponse】验证问卷ID: ${surveyId}`);
+      console.log(`【createSurveyResponse】验证问卷ID: ${numericSurveyId}`);
       const { data: surveyExists, error: surveyError } = await supabase
         .from('cu_survey')
         .select('id')
-        .eq('id', surveyId)
+        .eq('id', numericSurveyId)
         .single();
         
       if (surveyError) {
@@ -507,21 +590,53 @@ export const createSurveyResponse = async (surveyId, respondentIdentifier = null
       }
       
       if (!surveyExists) {
-        console.error(`【createSurveyResponse】无效的问卷ID: ${surveyId}`);
-        throw new Error(`Survey with ID ${surveyId} does not exist`);
+        console.error(`【createSurveyResponse】无效的问卷ID: ${numericSurveyId}`);
+        throw new Error(`Survey with ID ${numericSurveyId} does not exist`);
       }
       
-      console.log(`【createSurveyResponse】问卷ID验证通过: ${surveyId}`);
+      console.log(`【createSurveyResponse】问卷ID验证通过: ${numericSurveyId}`);
     } catch (validationError) {
       console.error(`【createSurveyResponse】问卷验证失败:`, validationError);
       throw validationError;
     }
     
-    // 准备要插入的数据
+    // 生成一个新的匿名标识符，不使用URL参数
+    const anonymousId = `anonymous_${Date.now()}`;
+    
+    // 检查是否已经有进行中的响应记录（通过浏览器存储的ID）
+    if (respondentIdentifier && respondentIdentifier.startsWith('anonymous_')) {
+      console.log(`【createSurveyResponse】检查现有响应记录，标识符: ${respondentIdentifier}`);
+      const { data: existingResponse, error: checkError } = await supabase
+        .from('cu_survey_responses')
+        .select('id, status, respondent_identifier')
+        .eq('survey_id', numericSurveyId)
+        .eq('respondent_identifier', respondentIdentifier)
+        .order('created_at', { ascending: false })
+        .limit(1);
+        
+      if (checkError) {
+        console.error('【createSurveyResponse】检查现有记录时出错:', checkError);
+      } else if (existingResponse && existingResponse.length > 0) {
+        console.log(`【createSurveyResponse】发现已存在的响应记录，ID: ${existingResponse[0].id}`);
+        
+        // 如果记录已存在且状态不是已完成，则返回现有记录
+        if (existingResponse[0].status !== 'completed') {
+          return {
+            id: Number(existingResponse[0].id),
+            status: existingResponse[0].status,
+            survey_id: numericSurveyId,
+            respondent_identifier: existingResponse[0].respondent_identifier,
+            created_at: existingResponse[0].created_at
+          };
+        }
+      }
+    }
+    
+    // 准备要插入的数据 - 始终使用服务端生成的匿名标识符
     const newResponseData = {
-      survey_id: surveyId,
+      survey_id: numericSurveyId,
       status: 'pending', // 默认状态为 pending
-      respondent_identifier: respondentIdentifier || `anonymous_${Date.now()}` // 如果没有提供标识符，创建一个匿名标识符
+      respondent_identifier: anonymousId
     };
 
     console.log('【createSurveyResponse】准备插入数据:', newResponseData);
@@ -546,10 +661,12 @@ export const createSurveyResponse = async (surveyId, respondentIdentifier = null
     }
     
     const responseRecord = data[0];
-    console.log(`【createSurveyResponse】成功创建响应记录! ID: ${responseRecord.id}`);
+    const responseId = Number(responseRecord.id); // 确保ID是数字类型
+    
+    console.log(`【createSurveyResponse】成功创建响应记录! ID: ${responseId}`);
     
     return {
-      id: responseRecord.id,
+      id: responseId,
       status: responseRecord.status,
       survey_id: responseRecord.survey_id,
       respondent_identifier: responseRecord.respondent_identifier,
@@ -563,17 +680,24 @@ export const createSurveyResponse = async (surveyId, respondentIdentifier = null
 };
 
 // 2024-09-24: 根据ID获取问卷响应记录
+// 2024-05-14T15:45:00Z 修改：确保responseId是数字类型
 export const getSurveyResponseById = async (responseId) => {
   console.log(`getSurveyResponseById 被调用，Response ID: ${responseId}`);
   try {
+    // 确保responseId是数字类型
+    const numericResponseId = Number(responseId);
+    if (isNaN(numericResponseId)) {
+      throw new Error(`Invalid response ID: ${responseId}. Must be a number.`);
+    }
+    
     const { data, error } = await supabase
       .from('cu_survey_responses')
       .select('*')
-      .eq('id', responseId)
+      .eq('id', numericResponseId)
       .single();
 
     if (error) {
-      console.error(`Supabase error fetching survey response ${responseId}:`, error);
+      console.error(`Supabase error fetching survey response ${numericResponseId}:`, error);
       throw new Error(error.message || '获取问卷响应记录失败');
     }
 
@@ -615,61 +739,138 @@ export const getSurveyResponseConversations = async (responseId) => {
 
 // 2024-08-15T19:00:00Z 新增：提交传统问卷回答（不使用聊天模式）
 // 2023-10-31T10:00:00Z 修改：修复问卷响应提交问题，添加日志输出
-export const submitSurveyResponse = async (surveyId, responseData) => {
-  console.log(`submitSurveyResponse 被调用，Survey ID: ${surveyId}，数据:`, responseData);
+// 2024-10-14T16:00:00Z 修改：修复response_mode字段缺失的问题
+// 2024-10-14T18:00:00Z 修改：移除completed_at字段，数据库中不存在该字段
+// 2024-05-10T14:30:00Z 修改：修复表名错误和参数处理问题
+// 2024-05-14T15:00:00Z 修改：确保responseId是数字类型
+// 2024-10-20T15:30:00Z 修改：确保单选题和多选题使用一致的数组格式保存
+// 2024-10-20T17:45:00Z 修改：添加completion_time计算和更新
+export const submitSurveyResponse = async (responseId, responseData) => {
+  console.log(`submitSurveyResponse 被调用，Response ID: ${responseId}，数据:`, responseData);
   try {
-    // 1. 创建一个问卷回答记录
-    const { data: surveyResponse, error: responseError } = await supabase
+    // 确保responseId存在
+    if (!responseId) {
+      throw new Error('Response ID is required');
+    }
+
+    // 确保responseId是数字类型
+    const numericResponseId = Number(responseId);
+    if (isNaN(numericResponseId)) {
+      throw new Error(`Invalid response ID: ${responseId}. Must be a number.`);
+    }
+    
+    // 首先获取当前响应记录以获取创建时间
+    console.log(`获取响应记录，Response ID: ${numericResponseId}`);
+    const { data: responseRecord, error: recordError } = await supabase
       .from('cu_survey_responses')
-      .insert([
-        { 
-          survey_id: surveyId,
-          status: 'completed',
-          respondent_identifier: responseData.respondentIdentifier || null,
-          response_mode: 'standard' // 标记为标准回答模式（区别于聊天模式）
+      .select('id, created_at')
+      .eq('id', numericResponseId)
+      .single();
+      
+    if (recordError) {
+      console.error(`获取响应记录失败，Response ID: ${numericResponseId}`, recordError);
+      throw new Error(`Failed to get response record: ${recordError.message}`);
+    }
+    
+    if (!responseRecord) {
+      console.error(`响应记录不存在，Response ID: ${numericResponseId}`);
+      throw new Error(`Response record with ID ${numericResponseId} does not exist`);
+    }
+    
+    // 计算完成时间
+    const createdAt = new Date(responseRecord.created_at);
+    const completedAt = new Date();
+    const diffMs = completedAt - createdAt; // 毫秒差
+    
+    // 转换为时:分:秒格式
+    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+    
+    // 格式化为 "HH:MM:SS"
+    const completionTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    
+    console.log(`计算完成时间: ${completionTime}，从 ${createdAt.toISOString()} 到 ${completedAt.toISOString()}`);
+    
+    // 如果直接传入了answers而不是嵌套在responseData.answers中，进行兼容处理
+    const answers = responseData.answers || responseData;
+    
+    // 确保answers存在
+    if (!answers) {
+      throw new Error('Response answers are required');
+    }
+    
+    // 将answers转换为数组格式
+    const answersArray = Object.entries(answers).map(([questionId, value]) => {
+      console.log(`处理问题 ${questionId} 的答案:`, value);
+      
+      let answerText = '';
+      
+      // 根据不同类型的答案进行格式化
+      if (Array.isArray(value)) {
+        // 多选题
+        answerText = JSON.stringify(value);
+      } else if (typeof value === 'boolean') {
+        // 布尔题
+        answerText = value ? 'true' : 'false';
+      } else if (typeof value === 'number') {
+        // NPS评分题
+        answerText = value.toString();
+      } else {
+        // 文本题或单选题
+        // 2024-10-20: 修改单选题处理方式，保持与多选题一致的数组格式
+        if (value && typeof value === 'string' && value.trim() !== '') {
+          // 如果是单选题，将答案包装为数组形式保存，确保格式一致性
+          answerText = JSON.stringify([value]);
+        } else {
+          // 如果是文本题或空值，保持字符串格式
+          answerText = String(value);
         }
-      ])
-      .select();
-
-    if (responseError) {
-      console.error(`Error creating survey response for survey ${surveyId}:`, responseError);
-      throw new Error(responseError.message || 'Failed to create survey response');
+      }
+      
+      return {
+        response_id: numericResponseId,
+        question_id: questionId,
+        text_answer: answerText
+      };
+    });
+    
+    console.log(`准备保存 ${answersArray.length} 个问题答案`, answersArray);
+    
+    // 首先更新问卷响应状态为completed，并设置完成时间
+    const { error: updateError } = await supabase
+      .from('cu_survey_responses')
+      .update({ 
+        status: 'completed',
+        completion_time: completionTime,
+        updated_at: completedAt.toISOString()
+      })
+      .eq('id', numericResponseId);
+      
+    if (updateError) {
+      console.error(`Error updating survey response status ${numericResponseId}:`, updateError);
+      throw new Error(updateError.message || 'Failed to update survey response status');
     }
 
-    if (!surveyResponse || surveyResponse.length === 0) {
-      throw new Error('Failed to retrieve created survey response data');
-    }
-
-    const surveyResponseId = surveyResponse[0].id;
-    console.log(`成功创建响应记录, ID: ${surveyResponseId}`);
-
-    // 2. 为每个问题答案创建记录
-    const answerData = responseData.responses.map(response => ({
-      survey_response_id: surveyResponseId,
-      question_id: response.questionId,
-      answer_text: response.text || '',
-      answer_type: 'text',
-      is_initial_answer: true
-    }));
-
-    console.log(`准备保存 ${answerData.length} 个问题答案`);
+    // 保存问题答案到正确的表中
     const { error: answersError } = await supabase
-      .from('cu_question_answers')
-      .insert(answerData);
+      .from('cu_survey_answers')
+      .insert(answersArray);
 
     if (answersError) {
-      console.error(`Error saving question answers for response ${surveyResponseId}:`, answersError);
+      console.error(`Error saving question answers for response ${numericResponseId}:`, answersError);
       throw new Error(answersError.message || 'Failed to save question answers');
     }
 
-    console.log(`问卷回答成功提交，响应ID: ${surveyResponseId}`);
+    console.log(`问卷回答成功提交，响应ID: ${numericResponseId}，完成时间: ${completionTime}`);
     return {
       success: true,
-      responseId: surveyResponseId,
-      message: 'Survey response submitted successfully'
+      responseId: numericResponseId,
+      message: 'Survey response submitted successfully',
+      completionTime: completionTime
     };
   } catch (error) {
-    console.error(`Error in submitSurveyResponse service for survey ${surveyId}:`, error);
+    console.error(`Error in submitSurveyResponse service for response ${responseId}:`, error);
     throw error;
   }
 };
