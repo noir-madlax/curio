@@ -46,7 +46,7 @@ function App() {
         <Route path="/settings" element={<Survey />} />
         <Route path="/help" element={<Survey />} />
         <Route path="/survey/:id/respond" element={<RedirectToRespond />} />
-        <Route path="/surveys/respond/:id" element={<SurveyView />} />
+        <Route path="/surveys/respond/:surveyId" element={<SurveyResponse />} />
         <Route path="/survey/:id/view/:responseId" element={<SurveyView />} />
         <Route path="/survey/:id/respond-chat" element={<SurveyChatPage />} />
         <Route path="/survey-thank-you/:id" element={<SurveyThankYou />} />

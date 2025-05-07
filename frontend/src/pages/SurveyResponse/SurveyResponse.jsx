@@ -9,11 +9,44 @@ import './SurveyResponse.css';
 import { 
   getSurveyById, 
   getQuestionsBySurveyId,
-  submitSurveyResponse
+  submitSurveyResponse,
+  getQuestionOptions,
+  createSurveyResponse
 } from '../../services/surveyService';
 
 // 导入SVG图标
 import logo from '../../assets/icons/Curio_logo.svg'; // 假设有这个图标，如果没有请创建
+// 这里需要导入其他图标 - 暂时使用占位符
+import arrowLeftIcon from '../../assets/icons/arrow_left_icon.svg'; // 左箭头图标
+import arrowRightIcon from '../../assets/icons/arrow_right_icon.svg'; // 右箭头图标
+
+// 导入问题类型和选项组件
+import QuestionOptions, { QUESTION_TYPES } from '../../components/common/QuestionOptions/QuestionOptions';
+
+// 渐变按钮组件
+const GradientButton = ({ children, onClick, disabled, className = '' }) => {
+  return (
+    <button 
+      className={`gradient-button ${className} ${disabled ? 'disabled' : ''}`} 
+      onClick={onClick}
+      disabled={disabled}
+    >
+      {children}
+    </button>
+  );
+};
+
+// 统一的页面头部组件
+const PageHeader = () => {
+  return (
+    <div className="mobile-survey-header">
+      <div className="header-logo-container">
+        <img src={logo} alt="Curio" className="mobile-logo" />
+        <span className="header-brand-text">Curio</span>
+      </div>
+    </div>
+  );
+};
 
 const SurveyResponse = () => {
   const navigate = useNavigate();
@@ -26,9 +59,18 @@ const SurveyResponse = () => {
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [thankYouMessage, setThankYouMessage] = useState('Your feedback is very important to us. We will use this information to improve the work environment.');
   
   // 存储用户的回答
   const [responses, setResponses] = useState({});
+  // 添加当前问题索引状态
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  // 添加开始状态
+  const [hasStarted, setHasStarted] = useState(false);
+  // 响应ID存储
+  const [responseId, setResponseId] = useState(null);
+  // 跟踪已回答的问题
+  const [answeredQuestions, setAnsweredQuestions] = useState(new Set());
   
   useEffect(() => {
     if (surveyId) {
@@ -40,19 +82,40 @@ const SurveyResponse = () => {
           setSurveyTitle(surveyData.title);
           setSurveyDescription(surveyData.description || '');
           
+          if (surveyData.thanksMessage) {
+            setThankYouMessage(surveyData.thanksMessage);
+          }
+          
           const questionsData = await getQuestionsBySurveyId(surveyId);
           
-          const formattedQuestions = questionsData.map((q, index) => ({
-            id: q.id,
-            number: index + 1,
-            text: q.text
-          }));
+          // 获取问题及其选项
+          const questionsWithOptions = await Promise.all(
+            questionsData.map(async (q, index) => {
+              const questionWithIndex = {
+                ...q,
+                number: index + 1
+              };
+              
+              // 如果是单选、多选或其他需要选项的题型，获取选项
+              if (
+                q.type === QUESTION_TYPES.SINGLE_CHOICE || 
+                q.type === QUESTION_TYPES.MULTIPLE_CHOICE ||
+                q.type === QUESTION_TYPES.NPS ||
+                q.type === QUESTION_TYPES.BOOLEAN
+              ) {
+                const options = await getQuestionOptions(q.id);
+                return { ...questionWithIndex, options };
+              }
+              
+              return questionWithIndex;
+            })
+          );
           
-          setQuestions(formattedQuestions);
+          setQuestions(questionsWithOptions);
           
           // 初始化responses对象
           const initialResponses = {};
-          formattedQuestions.forEach(q => {
+          questionsWithOptions.forEach(q => {
             initialResponses[q.id] = '';
           });
           setResponses(initialResponses);
@@ -69,37 +132,101 @@ const SurveyResponse = () => {
     }
   }, [surveyId]);
   
-  const handleChange = (questionId, value) => {
+  // 计算调查需要的时间
+  const estimateSurveyTime = () => {
+    if (!questions || questions.length === 0) return '1 minute';
+    if (questions.length <= 5) return '1 minute';
+    if (questions.length <= 10) return '2 minutes';
+    return `${Math.ceil(questions.length / 5)} minutes`;
+  };
+  
+  const handleAnswerChange = (questionId, value) => {
     setResponses({
       ...responses,
       [questionId]: value
     });
+    
+    // 记录已回答的问题
+    setAnsweredQuestions(prev => {
+      const newSet = new Set(prev);
+      newSet.add(questionId);
+      return newSet;
+    });
+  };
+  
+  // 检查当前问题是否已回答
+  const isCurrentQuestionAnswered = () => {
+    if (!questions || questions.length === 0) return false;
+    
+    const currentQuestion = questions[currentQuestionIndex];
+    if (!currentQuestion) return false;
+    
+    const answer = responses[currentQuestion.id];
+    
+    // 检查回答是否有效
+    if (answer === undefined || answer === null) return false;
+    if (Array.isArray(answer) && answer.length === 0) return false;
+    if (typeof answer === 'string' && answer.trim() === '') return false;
+    
+    return true;
+  };
+  
+  // 检查特定问题是否已回答
+  const isQuestionAnswered = (questionId) => {
+    return answeredQuestions.has(questionId);
+  };
+  
+  // 根据问题类型获取提示文本
+  const getQuestionHintText = (questionType) => {
+    switch (questionType) {
+      case QUESTION_TYPES.TEXT:
+        return "Type your answer here";
+      case QUESTION_TYPES.SINGLE_CHOICE:
+        return "Select one option";
+      case QUESTION_TYPES.MULTIPLE_CHOICE:
+        return "Select one or more options";
+      case QUESTION_TYPES.NPS:
+        return "Choose a rating";
+      case QUESTION_TYPES.BOOLEAN:
+        return "Select yes or no";
+      default:
+        return "Select an answer";
+    }
+  };
+  
+  const handleNext = () => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else {
+      handleSubmit();
+    }
+  };
+  
+  const handleBack = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+    }
   };
   
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setIsSubmitting(true);
     
     try {
-      // 格式化回答数据
-      const formattedResponses = Object.keys(responses).map(questionId => ({
-        questionId,
-        text: responses[questionId]
-      }));
+      let surveyResponseId = responseId;
       
-      // 过滤掉空回答
-      const validResponses = formattedResponses.filter(r => r.text.trim() !== '');
-      
-      if (validResponses.length === 0) {
-        setError('Please answer at least one question');
-        setIsSubmitting(false);
-        return;
+      // 如果还没有创建响应ID，先创建一个
+      if (!surveyResponseId) {
+        const createResponse = await createSurveyResponse(surveyId);
+        surveyResponseId = createResponse.id;
+        setResponseId(surveyResponseId);
       }
       
-      // 提交回答
-      await submitSurveyResponse(surveyId, {
-        responses: validResponses
-      });
+      // 直接提交responses对象，不再包装在一个对象里
+      await submitSurveyResponse(surveyResponseId, responses);
+      
+      // 设置标记，表示此问卷已完成，防止再次创建响应记录
+      sessionStorage.setItem(`survey_${surveyId}_completed`, 'true');
       
       setSubmitSuccess(true);
       
@@ -111,6 +238,18 @@ const SurveyResponse = () => {
     }
   };
   
+  const handleStart = async () => {
+    try {
+      // 创建响应ID
+      const createResponse = await createSurveyResponse(surveyId);
+      setResponseId(createResponse.id);
+      setHasStarted(true);
+    } catch (err) {
+      console.error('Error creating survey response:', err);
+      setError(err.message || 'Failed to start survey');
+    }
+  };
+  
   const handleReset = () => {
     // 重置所有回答
     const resetResponses = {};
@@ -118,20 +257,87 @@ const SurveyResponse = () => {
       resetResponses[q.id] = '';
     });
     setResponses(resetResponses);
+    setAnsweredQuestions(new Set());
+  };
+  
+  // 根据问题类型渲染响应UI
+  const renderQuestionInput = (question) => {
+    switch (question.type) {
+      case QUESTION_TYPES.TEXT:
+        return (
+          <div className="mobile-text-input-container">
+            <textarea
+              className="mobile-text-input"
+              value={responses[question.id] || ''}
+              onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+              placeholder="Enter your answer here..."
+              rows={4}
+            />
+          </div>
+        );
+      case QUESTION_TYPES.SINGLE_CHOICE:
+      case QUESTION_TYPES.MULTIPLE_CHOICE:
+      case QUESTION_TYPES.NPS:
+      case QUESTION_TYPES.BOOLEAN:
+        return (
+          <QuestionOptions
+            question={question}
+            mode="respond"
+            currentAnswer={responses[question.id] || null}
+            handleAnswerChange={handleAnswerChange}
+          />
+        );
+      default:
+        // 默认使用选项模式
+        return (
+          <div className="mobile-options-container">
+            <div 
+              className={`mobile-option ${responses[question.id] === 'Strongly Disagree' ? 'selected' : ''}`}
+              onClick={() => handleAnswerChange(question.id, 'Strongly Disagree')}
+            >
+              Strongly Disagree
+            </div>
+            <div 
+              className={`mobile-option ${responses[question.id] === 'Disagree' ? 'selected' : ''}`}
+              onClick={() => handleAnswerChange(question.id, 'Disagree')}
+            >
+              Disagree
+            </div>
+            <div 
+              className={`mobile-option ${responses[question.id] === 'Neutral' ? 'selected' : ''}`}
+              onClick={() => handleAnswerChange(question.id, 'Neutral')}
+            >
+              Neutral
+            </div>
+            <div 
+              className={`mobile-option ${responses[question.id] === 'Agree' ? 'selected' : ''}`}
+              onClick={() => handleAnswerChange(question.id, 'Agree')}
+            >
+              Agree
+            </div>
+            <div 
+              className={`mobile-option ${responses[question.id] === 'Strongly Agree' ? 'selected' : ''}`}
+              onClick={() => handleAnswerChange(question.id, 'Strongly Agree')}
+            >
+              Strongly Agree
+            </div>
+          </div>
+        );
+    }
   };
   
   if (error) {
     return (
       <div className="mobile-survey-container">
-        <div className="mobile-survey-header">
-          <img src={logo} alt="Curio" className="mobile-logo" />
-        </div>
-        <div className="error-container">
-          <h2>Error</h2>
-          <p>{error}</p>
-          <Button variant="primary" onClick={() => window.location.reload()}>
-            Retry
-          </Button>
+        <PageHeader />
+        <div className="mobile-survey-content">
+          <div className="error-container">
+            <h2>Error</h2>
+            <p>{error}</p>
+            <Button variant="primary" onClick={() => window.location.reload()}>
+              Retry
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -140,10 +346,10 @@ const SurveyResponse = () => {
   if (isLoading) {
     return (
       <div className="mobile-survey-container">
-        <div className="mobile-survey-header">
-          <img src={logo} alt="Curio" className="mobile-logo" />
+        <PageHeader />
+        <div className="mobile-survey-content">
+          <FullPageLoading message="Loading survey..." />
         </div>
-        <FullPageLoading message="Loading survey..." />
       </div>
     );
   }
@@ -151,85 +357,140 @@ const SurveyResponse = () => {
   if (submitSuccess) {
     return (
       <div className="mobile-survey-container">
-        <div className="mobile-survey-header">
-          <img src={logo} alt="Curio" className="mobile-logo" />
-        </div>
-        <div className="success-container">
-          <h2>Thank You!</h2>
-          <p>Your response has been successfully submitted.</p>
-          <p>You can now close this page.</p>
+        <PageHeader />
+        <div className="mobile-survey-content">
+          <div className="mobile-survey-complete">
+            <div className="mobile-complete-icon">
+              {/* 完成图标 */}
+              <svg width="84" height="84" viewBox="0 0 84 84" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M34.9997 56.5001L21 42.5004L25.6663 37.8341L34.9997 47.1674L58.3333 23.8338L62.9997 28.5001L34.9997 56.5001Z" fill="#3D39FB"/>
+              </svg>
+            </div>
+            <h1 className="mobile-complete-title">Thank you for your participation!</h1>
+            <p className="mobile-complete-message">
+              {thankYouMessage}
+            </p>
+          </div>
         </div>
       </div>
     );
   }
   
+  // 问卷开始页
+  if (!hasStarted) {
+    return (
+      <div className="mobile-survey-container">
+        <PageHeader />
+        <div className="mobile-survey-content">
+          <div className="mobile-survey-start">
+            <div className="mobile-survey-title">
+              <h1 className="title-center">{surveyTitle || 'Workplace Happiness Survey'}</h1>
+            </div>
+            
+            <p className="mobile-description">
+              {surveyDescription || 'Thank you for participating in our workplace happiness survey. This will help us understand your work experience and improve the work environment.'}
+            </p>
+            
+            <p className="mobile-time-estimate">
+              This survey will take approximately {estimateSurveyTime()} to complete
+            </p>
+            
+            <GradientButton onClick={handleStart}>
+              <span>Start Survey</span>
+            </GradientButton>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // 问卷过程页
+  const currentQuestion = questions[currentQuestionIndex];
+  const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+  const questionAnswered = isCurrentQuestionAnswered();
+  const nextQuestionId = currentQuestionIndex < questions.length - 1 ? 
+    questions[currentQuestionIndex + 1]?.id : null;
+  const hasNextQuestion = currentQuestionIndex < questions.length - 1;
+  const nextQuestionAnswered = nextQuestionId ? isQuestionAnswered(nextQuestionId) : false;
+  const showNextButton = currentQuestionIndex > 0 && hasNextQuestion && nextQuestionAnswered;
+  
   return (
     <div className="mobile-survey-container">
-      <div className="mobile-survey-header">
-        <img src={logo} alt="Curio" className="mobile-logo" />
-      </div>
-      
+      <PageHeader />
       <div className="mobile-survey-content">
-        {/* 2024-10-14: 使用SurveyHeader公共组件替换原有的标题结构 */}
-        <SurveyHeader
-          title={surveyTitle}
-          style={{ marginBottom: '16px' }} // 调整移动端样式的间距
-        />
-        
-        {isSubmitting && (
-          <LoadingOverlay message="Submitting your responses..." />
-        )}
-        
-        {/* 2024-10-14: 使用SurveyDescription公共组件替换原有的描述结构 */}
-        <SurveyDescription description={surveyDescription} style={{ marginBottom: '16px' }} />
-        
-        <form onSubmit={handleSubmit} className="mobile-survey-form">
-          <div className="mobile-questions-section">
-            <h2 className="mobile-section-title">Questions</h2>
-            {questions.length === 0 ? (
-              <div className="empty-questions-message">
-                <p>No questions available in this survey.</p>
+        <div className="mobile-survey-progress">
+          <div className="mobile-survey-header-progress">
+            <div className="mobile-survey-title-progress">
+              <h1 className="title-center">{surveyTitle || 'Workplace Happiness Survey'}</h1>
+            </div>
+          </div>
+          
+          {isSubmitting && (
+            <LoadingOverlay message="Submitting your responses..." />
+          )}
+          
+          {currentQuestion && (
+            <div className="mobile-question-item">
+              {/* 进度条 */}
+              <div className="progress-bar-container">
+                <div className="progress-bar" style={{ width: `${progress}%` }}></div>
               </div>
+              
+              {/* 导航按钮移到问题容器顶部 - 使用固定布局 */}
+              <div className="mobile-question-nav">
+                <div className="nav-left">
+                  {currentQuestionIndex > 0 && (
+                    <button className="mobile-nav-button" onClick={handleBack}>
+                      <img src={arrowLeftIcon} alt="Back" className="nav-icon nav-icon-left" />
+                      <span>Back</span>
+                    </button>
+                  )}
+                </div>
+                
+                {/* 页码指示器放在中间 */}
+                <div className="mobile-progress-indicator-center">
+                  {currentQuestionIndex + 1}/{questions.length}
+                </div>
+                
+                <div className="nav-right">
+                  {showNextButton && (
+                    <button className="mobile-nav-button" onClick={handleNext}>
+                      <span>Next</span>
+                      <img src={arrowRightIcon} alt="Next" className="nav-icon nav-icon-right" />
+                    </button>
+                  )}
+                </div>
+              </div>
+              
+              <div className="mobile-question-text">{currentQuestion.text}</div>
+              <div className="mobile-select-hint">
+                {getQuestionHintText(currentQuestion.type)}
+              </div>
+              
+              {/* 根据问题类型渲染不同的UI */}
+              {renderQuestionInput(currentQuestion)}
+            </div>
+          )}
+          
+          {/* 固定在底部的提交/下一步按钮 */}
+          <div className="fixed-bottom-button">
+            {currentQuestionIndex === questions.length - 1 ? (
+              <GradientButton 
+                onClick={handleSubmit}
+                disabled={!questionAnswered || isSubmitting}
+              >
+                <span>Submit</span>
+              </GradientButton>
             ) : (
-              <div className="question-list">
-                {questions.map((question) => (
-                  <div key={question.id} className="mobile-question-item">
-                    <div className="mobile-question-number">
-                      Question {question.number}
-                    </div>
-                    <div className="mobile-question-text">{question.text}</div>
-                    <div className="mobile-response-input">
-                      <textarea
-                        value={responses[question.id] || ''}
-                        onChange={(e) => handleChange(question.id, e.target.value)}
-                        placeholder="Enter your answer here..."
-                        rows={3}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <GradientButton 
+                onClick={handleNext}
+                disabled={!questionAnswered || isSubmitting}
+              >
+                <span>Next</span>
+              </GradientButton>
             )}
           </div>
-            
-          <div className="mobile-form-actions">
-              <Button 
-                variant="secondary" 
-                onClick={handleReset}
-              className="mobile-button"
-              >
-                Reset
-              </Button>
-              <Button 
-                variant="primary" 
-                type="submit"
-              className="mobile-button"
-              disabled={isSubmitting}
-              >
-              Submit
-              </Button>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   );

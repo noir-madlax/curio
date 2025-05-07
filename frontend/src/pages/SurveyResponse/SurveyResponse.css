@@ -225,134 +225,339 @@
   }
 }
 
-/* 移动端适配的样式 */
+/* 移动端适配的样式 - 按照Figma设计稿更新 */
 .mobile-survey-container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   width: 100%;
-  background-color: #f8f9fa;
-  font-family: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: #ffffff;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  max-width: 480px; /* 限制桌面视图的最大宽度，模拟移动设备 */
+  margin: 0 auto; /* 使其在桌面视图中居中 */
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); /* 添加阴影使其在桌面视图中更明显 */
+  position: relative; /* 添加相对定位，以支持固定底部按钮 */
+  padding-bottom: 80px; /* 为底部的按钮预留空间 */
 }
 
+/* 统一的页面头部样式 */
 .mobile-survey-header {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   padding: 16px;
+  border-bottom: 1px solid #F0F0F5;
   background-color: #ffffff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  height: 64px;
+}
+
+.header-logo-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .mobile-logo {
   height: 32px;
+  width: auto;
+}
+
+.header-brand-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: #3D39FB;
 }
 
 .mobile-survey-content {
   flex: 1;
-  padding: 16px;
-  max-width: 600px;
-  margin: 0 auto;
+  padding: 20px 24px;
   width: 100%;
 }
 
-.mobile-survey-title h1 {
-  font-size: 22px;
+/* 标题居中 */
+.title-center {
+  text-align: center;
+  width: 100%;
+  font-size: 28px;
+  margin: 0;
+  color: #2F3033;
   font-weight: 600;
-  color: #333;
-  margin: 8px 0 16px;
+}
+
+/* 问卷开始页样式 */
+.mobile-survey-start {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 24px;
+  gap: 30px;
   text-align: center;
 }
 
-.mobile-description-section {
-  background-color: #f0f7ff;
-  padding: 16px;
-  border-radius: 8px;
-  margin-bottom: 24px;
-  border: 1px solid #e0ecff;
+.mobile-survey-title h1 {
+  font-size: 28px;
+  font-weight: 600;
+  color: #202023;
+  margin: 0 0 16px;
+  text-align: center;
+  line-height: 1.2;
 }
 
 .mobile-description {
   font-size: 16px;
   line-height: 1.5;
-  color: #4a5568;
-  margin: 0;
+  color: #6B7481;
+  margin: 0 0 20px;
+  text-align: center;
 }
 
-.mobile-section-title {
-  font-size: 18px;
+.mobile-time-estimate {
+  font-size: 14px;
+  color: #858B98;
+  margin: 10px 0 30px;
+  text-align: center;
+}
+
+/* 渐变按钮样式 */
+.gradient-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #5F5CFF 0%, #3D39FB 100%);
+  border-radius: 8px;
+  padding: 14px 24px;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+  transition: opacity 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 2px 4px rgba(61, 57, 251, 0.2);
+}
+
+.gradient-button span {
+  font-size: 16px;
   font-weight: 500;
-  color: #333;
-  margin-bottom: 16px;
+  color: #FFFFFF;
+}
+
+.gradient-button:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.gradient-button:active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.gradient-button.disabled {
+  background: linear-gradient(135deg, #a8a7ff 0%, #9593ff 100%);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* 固定在底部的按钮 */
+.fixed-bottom-button {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px 24px;
+  background-color: white;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* 问卷过程页样式 */
+.mobile-survey-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: relative;
+}
+
+.mobile-survey-header-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0;
+  margin-bottom: 10px;
+}
+
+.mobile-survey-title-progress h1 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2F3033;
+  margin: 0 0 10px 0;
+  text-align: center;
+}
+
+.mobile-progress-indicator {
+  font-size: 14px;
+  color: #848A97;
+  margin-bottom: 5px;
+}
+
+/* 页码指示器居中 */
+.mobile-progress-indicator-center {
+  font-size: 14px;
+  color: #848A97;
+  font-weight: 500;
+  text-align: center;
+  flex: 1;
 }
 
 .mobile-question-item {
   background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  padding: 16px;
+  border-radius: 12px;
+  padding: 20px;
+  position: relative; /* 为绝对定位的进度条添加相对定位容器 */
   margin-bottom: 16px;
-}
-
-.mobile-question-number {
-  font-size: 14px;
-  font-weight: 600;
-  color: #718096;
-  margin-bottom: 8px;
 }
 
 .mobile-question-text {
-  font-size: 16px;
-  font-weight: 500;
-  color: #2d3748;
+  font-size: 18px;
+  font-weight: 600;
+  color: #3A434F;
   margin-bottom: 16px;
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
-.mobile-response-input textarea {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  font-size: 16px;
-  resize: vertical;
-  min-height: 80px;
-  background-color: #f8fafc;
-  transition: border-color 0.2s, box-shadow 0.2s;
+.mobile-select-hint {
+  font-size: 14px;
+  color: #7E8490;
+  margin-bottom: 16px;
 }
 
-.mobile-response-input textarea:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+.mobile-options-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.mobile-response-input textarea::placeholder {
-  color: #a0aec0;
+.mobile-option {
+  padding: 14px 16px;
+  border-radius: 8px;
+  background-color: #F7F8FA;
+  font-size: 15px;
+  font-weight: 500;
+  color: #464E59;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-.mobile-response-actions {
+.mobile-option.selected {
+  background-color: #EDEDFF;
+  color: #5F5CFF;
+  border: 1px solid #5F5CFF;
+}
+
+.mobile-navigation {
   display: flex;
   justify-content: space-between;
-  margin-top: 24px;
-  margin-bottom: 32px;
+  margin-top: 20px;
 }
 
-.mobile-reset-button, .mobile-submit-button {
-  flex: 1;
-  max-width: 48%;
-}
-
-.mobile-survey-footer {
-  text-align: center;
-  padding: 16px;
-  color: #718096;
+.mobile-nav-button {
   font-size: 14px;
-  background-color: #ffffff;
-  border-top: 1px solid #e2e8f0;
+  font-weight: 500;
+  color: #979AA5;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.2s ease;
+}
+
+.mobile-nav-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mobile-nav-button:hover:not(:disabled) {
+  color: #5F5CFF;
+}
+
+.nav-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.nav-icon-left {
+  margin-right: 4px;
+}
+
+.nav-icon-right {
+  margin-left: 4px;
+}
+
+/* 旋转图标 */
+.rotate-180 {
+  transform: rotate(180deg);
+}
+
+/* 修改导航按钮位置，移到问题容器顶部 */
+.mobile-question-nav {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding: 0 0 10px 0;
+  border-bottom: 1px solid #F0F0F5;
+}
+
+/* 固定左中右布局 */
+.nav-left, .nav-right {
+  width: 80px; /* 固定宽度 */
+  display: flex;
+}
+
+.nav-left {
+  justify-content: flex-start;
+}
+
+.nav-right {
+  justify-content: flex-end;
+}
+
+/* 问卷完成页样式 */
+.mobile-survey-complete {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.mobile-complete-icon {
+  width: 120px;
+  height: 120px;
+  border-radius: 60px;
+  background-color: #F0F9FF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.mobile-complete-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1F1F22;
+  margin: 0 0 20px;
+}
+
+.mobile-complete-message {
+  font-size: 16px;
+  font-weight: 400;
+  color: #68707D;
+  line-height: 1.5;
+  margin: 0;
+  text-align: center;
 }
 
 /* 错误和成功状态样式 */
@@ -369,7 +574,7 @@
 .error-container h2, .success-container h2 {
   color: #2d3748;
   margin-bottom: 16px;
-  font-size: 22px;
+  font-size: 20px;
 }
 
 .error-container p, .success-container p {
@@ -413,6 +618,55 @@
   z-index: 1000;
 }
 
+/* 进度条样式 */
+.progress-bar-container {
+  width: 100%;
+  height: 4px;
+  background-color: #F0F0F5;
+  border-radius: 2px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(135deg, #5F5CFF 0%, #3D39FB 100%);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* 文本回答样式 */
+.mobile-text-input-container {
+  margin-top: 12px;
+}
+
+.mobile-text-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #E6E6E9;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 400;
+  color: #464E59;
+  background-color: #F7F8FA;
+  resize: vertical;
+  min-height: 120px;
+  margin-bottom: 20px;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.mobile-text-input:focus {
+  outline: none;
+  border-color: #5F5CFF;
+  box-shadow: 0 0 0 3px rgba(95, 92, 255, 0.1);
+}
+
+.mobile-text-input::placeholder {
+  color: #7E8490;
+}
+
 /* 媒体查询优化不同屏幕尺寸 */
 @media (min-width: 640px) {
   .mobile-survey-content {
@@ -420,37 +674,43 @@
   }
   
   .mobile-survey-title h1 {
-    font-size: 24px;
+    font-size: 28px;
   }
   
-  .mobile-response-actions {
-    justify-content: center;
+  .mobile-navigation {
+    justify-content: space-between;
     gap: 16px;
   }
   
-  .mobile-reset-button, .mobile-submit-button {
-    max-width: 180px;
+  .fixed-bottom-button {
+    width: 100%;
+    max-width: 480px;
   }
 }
 
 @media (max-width: 359px) {
   .mobile-survey-title h1 {
-    font-size: 20px;
+    font-size: 24px;
   }
   
   .mobile-question-text {
-    font-size: 15px;
+    font-size: 16px;
   }
   
-  .mobile-response-input textarea {
-    font-size: 15px;
-    padding: 10px;
+  .mobile-option {
+    font-size: 14px;
+    padding: 12px 14px;
+  }
+  
+  .mobile-text-input {
+    font-size: 14px;
+    padding: 12px 14px;
   }
 }
 
 /* 针对适配iOS和Safari的样式调整 */
 @supports (-webkit-touch-callout: none) {
-  .mobile-response-input textarea {
+  .mobile-text-input {
     -webkit-appearance: none;
   }
   
