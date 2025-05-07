@@ -12,7 +12,7 @@ import viewIcon from '../../../../assets/icons/view1_icon.svg';
 import insightsIcon from '../../../../assets/icons/insights_icon.svg';
 import editIcon from '../../../../assets/icons/edit_icon.svg';
 import deleteIcon from '../../../../assets/icons/delete_icon.svg';
-import questionIcon from '../../../../assets/icons/Question_Icon.svg';
+import questionIcon from '../../../../assets/icons/question_icon.svg';
 
 // 导入删除服务
 import { deleteSurvey } from '../../../../services/surveyService';
