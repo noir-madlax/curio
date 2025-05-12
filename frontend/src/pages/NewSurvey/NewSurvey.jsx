@@ -513,7 +513,7 @@ const NewSurvey = ({ viewMode = false }) => {
       // 2024-08-06 Added: Generate unique survey link
       const generateSurveyLink = async (id) => {
         // Generate a unique link based on ID, can add random characters to increase security
-        const baseUrl = window.location.origin; // Get the current website base URL
+        const baseUrl = import.meta.env.VITE_PUBLIC_URL || window.location.origin; // 使用环境变量
         const randomStr = Math.random().toString(36).substring(2, 8);
         // 修正URL格式，使用正确的路径格式
         const surveyLink = `${baseUrl}/surveys/respond/${id}?t=${randomStr}`;
